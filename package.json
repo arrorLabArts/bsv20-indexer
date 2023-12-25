@@ -1,0 +1,27 @@
+{
+  "name": "bsv20-indexer",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "ArrorLab Arts",
+  "license": "ISC",
+  "dependencies": {
+    "@gorillapool/js-junglebus": "^0.4.1",
+    "@handcash/handcash-connect": "^0.6.11",
+    "@supabase/supabase-js": "^2.38.1",
+    "bsv-wasm": "^2.0.1",
+    "cors": "^2.8.5",
+    "crypto-js": "^4.1.1",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "lodash": "^4.17.21",
+    "mysql": "^2.18.1",
+    "node-input-validator": "^4.4.0",
+    "nonce-generator": "^1.0.2",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.0"
+  }
+}
