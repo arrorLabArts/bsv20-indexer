@@ -10,8 +10,6 @@ function getInscDetails(envelope){
         insc : tokens[6],
     }
 
-    console.log(mimeType);
-
     if(mimeType == "application/bsv-20"){
         
         let inscJson = JSON.parse(hexToText(tokens[6]));

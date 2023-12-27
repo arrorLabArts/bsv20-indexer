@@ -5,7 +5,7 @@ const _indexerHelper = new IndexerHelper();
 const _mysqlHelper = new MysqlHelper();
 
 const indexingQueue = [];
-let validationRunning = false;
+let indexingRunning = false;
 
 
 
@@ -35,14 +35,14 @@ class JBHelper {
 
     }
     async processIndexingQueue(){
-        if (!validationRunning && indexingQueue.length > 0) {
+        if (!indexingRunning && indexingQueue.length > 0) {
             let tx = indexingQueue.shift();
-            validationRunning = true;
+            indexingRunning = true;
             //await _indexerHelper.indexBsv20(tx["transaction"],tx["block_height"],tx["block_index"]);
-            //await _mysqlHelper.updateIndexerStatus({"height":tx["block_height"]});
-            //await _mysqlHelper.updateIndexerStatus({"index":tx["block_index"]});
+            //await _mysqlHelper.updateIndexerStatus({"indexHeight":tx["block_height"]});
+            //await _mysqlHelper.updateIndexerStatus({"indexIdx":tx["block_index"]});
             //await _mysqlHelper.updateIndexerStatus({"state":1});
-            validationRunning = false;
+            indexingRunning = false;
             this.processIndexingQueue();
 
         }

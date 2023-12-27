@@ -1,6 +1,6 @@
 var express = require('express');
 var router = express.Router();
-// const {  } = require('../controllers/bsv20');
+const { getTickInfo, getMarketOrders, getBalanceByAddress, getUtxoByAddress, getOutpoint  } = require('../controllers/bsv20');
 
 
 
@@ -66,12 +66,41 @@ var router = express.Router();
  *      TokenUtxo:
  *        type: object
  *        properties:
+ *          txid:
+ *              type: string
+ *          vout:
+ *              type : number
+ *          outpoint:
+ *              type: string
  *          tick:
  *              type: string
  *          amt:
  *              type: number
+ *          script:
+ *              type: string
+ *          op:
+ *              type: string
+ *          state:
+ *              type: number
+ *      InscTxo:
+ *        type: object
+ *        properties:
+ *          txid:
+ *              type: string
+ *          vout:
+ *              type : number
  *          outpoint:
  *              type: string
+ *          tick:
+ *              type: string
+ *          insc:
+ *              type : object
+ *          type:
+ *              type : number
+ *          subType:
+ *              type : number
+ *          amt:
+ *              type: number
  *          script:
  *              type: string
  *          op:
@@ -122,14 +151,7 @@ var router = express.Router();
  *                  $ref: '#/components/schemas/Order'
  * 
  */
-router.get('/market/:tick', (req, res) => {
-    const tick = req.params["tick"];
-    const sort = req.query["sort"];
-    const limit = req.query["limit"];
-    const offset = req.query["offset"];
-    const valid = req.query["valid"];
-    res.send("success");
-});
+router.get('/market/:tick', getMarketOrders);
 
 /**
  * @swagger
@@ -152,10 +174,7 @@ router.get('/market/:tick', (req, res) => {
  *                  $ref: '#/components/schemas/Token'
  * 
  */
-router.get('/tick/:tick', (req, res) => {
-    const tick = req.params["tick"];
-    res.send("success");
-});
+router.get('/tick/:tick',getTickInfo);
 
 /**
  * @swagger
@@ -183,11 +202,7 @@ router.get('/tick/:tick', (req, res) => {
  *              schema:
  *                  $ref: '#/components/schemas/TokenBalance'
  */
-router.get('/address/:address/balance/:tick', (req, res) => {
-    const address = req.params["address"];
-    const tick = req.params["tick"];
-    res.send("success");
-});
+router.get('/address/:address/balance/:tick', getBalanceByAddress);
 
 /**
  * @swagger
@@ -215,10 +230,34 @@ router.get('/address/:address/balance/:tick', (req, res) => {
  *              schema:
  *                  $ref: '#/components/schemas/TokenUtxo'
  */
-router.get('/address/:address/utxos/:tick', (req, res) => {
-    const address = req.params["address"];
-    const tick = req.params["tick"];
-    res.send("success");
-});
+router.get('/address/:address/utxos/:tick', getUtxoByAddress);
+
+/**
+ * @swagger
+ * /api/bsv20/outpoint/{outpoint}:
+ *   get:
+ *     summary: Get information for an outpoint
+ *     parameters:
+ *       - in: path
+ *         name: address
+ *         required: true
+ *         description: The address
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: tick
+ *         required: true
+ *         description: The ticker symbol
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *         content:
+ *          application/json:
+ *              schema:
+ *                  $ref: '#/components/schemas/InscTxo'
+ */
+router.get('/outpoint/:outpoint', getOutpoint);
 
 module.exports = router;

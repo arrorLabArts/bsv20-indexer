@@ -1,7 +1,7 @@
 
 # Open Source BSV-20 Indexer by FireSat.io
 
-Welcome to the documentation for the open-source BSV-20 indexer developed by FireSat.io. This powerful indexer allows you to explore and interact with the BSV-20 blockchain seamlessly. We encourage developers to not only use this tool but also actively contribute to its improvement.
+Welcome to the documentation for the open-source BSV-20 indexer developed by FireSat.io. This powerful indexer allows you to explore and interact with the BSV-20 layer seamlessly. We encourage developers to not only use this tool but also actively contribute to its improvement.
 
 ### Contribution and Bug Reports
 
@@ -47,6 +47,7 @@ For the Jungle Bus subscription, the BSV-20 indexer utilizes the following confi
 
 - **Output Type:** ord
 - **Context:** application/bsv-20
+- **Data keys:** tick=QlNWUw==,tick=RklSRQ==,tick=RFJBRw==,QklaQQ==
 
 These settings define the interaction with the Jungle Bus service and help in processing BSV-20 data effectively.
 
