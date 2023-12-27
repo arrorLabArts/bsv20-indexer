@@ -11,8 +11,10 @@
   "dependencies": {
     "@gorillapool/js-junglebus": "^0.4.1",
     "@handcash/handcash-connect": "^0.6.11",
+    "@rodrigogs/mysql-events": "^0.6.0",
     "@supabase/supabase-js": "^2.38.1",
     "bsv-wasm": "^2.0.1",
+    "chokidar": "^3.5.3",
     "cors": "^2.8.5",
     "crypto-js": "^4.1.1",
     "dotenv": "^8.2.0",

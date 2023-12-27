@@ -1,5 +1,5 @@
 const { P2PKHAddress, TxOut } = require("bsv-wasm");
-const { regexOrderLock, regexTxOutHex } = require("../shared/data/regex");
+const { regexOrderLock, regexTxOutHex, regexNumber } = require("../shared/data/regex");
 const { hexToText, hexToDecimalLittleEndian } = require("./misc");
 
 function getInscDetails(envelope){
@@ -10,10 +10,13 @@ function getInscDetails(envelope){
         insc : tokens[6],
     }
 
+    console.log(mimeType);
+
     if(mimeType == "application/bsv-20"){
         
         let inscJson = JSON.parse(hexToText(tokens[6]));
-        console.log(inscJson)
+        console.log(inscJson);
+
         if(isDeployInsc(inscJson) || isMintInsc(inscJson) || isTransferInsc(inscJson)){
            returnVal = {
               type : "bsv-20",
@@ -103,26 +106,42 @@ function isDeployInsc(jsonObj){
     }
 
 
-    // Check max, lim, sats, and blocks are non-negative integers
-    if (!Number.isInteger(jsonObj.max) || !Number.isInteger(jsonObj.lim)) {
-        return false;
+    // Check max, lim are non-negative integers
+    if(typeof jsonObj.lim === 'number'){
+        if(jsonObj.lim <= 0){
+           return false;
+        }
+    }else if(typeof jsonObj.lim === 'string'){
+       if(regexNumber.test(jsonObj.lim)){
+          if(parseInt(jsonObj.lim) <= 0){
+           return false;
+          }
+       }else{
+           return false;
+       }
     }
+
+    if(typeof jsonObj.max === 'number'){
+         if(jsonObj.max <= 0 || jsonObj.max > 2**64 - 1){
+            return false;
+         }
+    }else if(typeof jsonObj.max === 'string'){
+        if(regexNumber.test(jsonObj.max)){
+           if(parseInt(jsonObj.max) <= 0 || parseInt(jsonObj.max) > 2**64 - 1){
+            return false;
+           }
+        }else{
+            return false;
+        }
+    }
+
 
 
     // Check dec if present is a non-negative integer
-    if (jsonObj.dec && !Number.isInteger(jsonObj.dec)) {
-        return false;
+    if(jsonObj.dec){
+        return Number.isInteger(jsonObj.dec) && jsonObj.dec > 0 && jsonObj.dec <= 18;
     }
 
-    // Check max, dec, limit, sats, and blocks are within valid ranges
-    if (jsonObj.max < 0 || jsonObj.lim < 0 ) {
-        return false;
-    }
-
-    // Maximum supply and decimals constraints
-    if (jsonObj.max > 2**64 - 1 || (jsonObj.dec && (jsonObj.dec < 0 || jsonObj.dec > 18))) {
-        return false;
-    }
 
     return true;
 
@@ -160,8 +179,18 @@ function isMintInsc(jsonObj){
         }
     
         // Check amt is a non-negative integer
-        if (!Number.isInteger(jsonObj.amt) || jsonObj.amt < 0) {
-            return false;
+        if(typeof jsonObj.amt === 'number'){
+            if(jsonObj.amt <= 0){
+                return false;
+            }
+        }else if(typeof jsonObj.amt === 'string'){
+            if(regexNumber.test(jsonObj.amt)){
+                if(parseInt(jsonObj.amt) <= 0){
+                    return false;
+                }
+            }else{
+                return false;
+            }
         }
     
         return true;
@@ -200,8 +229,18 @@ function isTransferInsc(jsonObj){
     }
 
     // Check amt is a non-negative integer
-    if (!Number.isInteger(jsonObj.amt) || jsonObj.amt < 0) {
-        return false;
+    if(typeof jsonObj.amt === 'number'){
+         if(jsonObj.amt <= 0){
+            return false;
+         }
+    }else if(typeof jsonObj.amt === 'string'){
+        if(regexNumber.test(jsonObj.amt)){
+           if(parseInt(jsonObj.amt) <= 0){
+            return false;
+           }
+        }else{
+            return false;
+        }
     }
 
     return true;

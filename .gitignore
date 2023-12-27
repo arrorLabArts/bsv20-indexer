@@ -1,5 +1,5 @@
 node_modules
-temp.txt
+tmp.txt
 
 *.sh
 *.env

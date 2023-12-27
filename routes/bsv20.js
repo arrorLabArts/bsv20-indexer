@@ -239,15 +239,9 @@ router.get('/address/:address/utxos/:tick', getUtxoByAddress);
  *     summary: Get information for an outpoint
  *     parameters:
  *       - in: path
- *         name: address
+ *         name: outpoint
  *         required: true
- *         description: The address
- *         schema:
- *           type: string
- *       - in: path
- *         name: tick
- *         required: true
- *         description: The ticker symbol
+ *         description: The tx outpoint
  *         schema:
  *           type: string
  *     responses:

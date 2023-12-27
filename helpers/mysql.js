@@ -451,12 +451,11 @@ class MysqlHelper {
       }
       
 
-      async getIndexerStatus(txid) {
+      async getIndexerStatus() {
         return new Promise((resolve, reject) => {
           
           _mysqlService._poolBsv20.query(
             `SELECT * FROM status WHERE id = 1`,
-            [txid],
             (err, result) => {
               if (err) {
                 console.error(err);
@@ -471,14 +470,14 @@ class MysqlHelper {
           );
         });
       }
-      async updateIndexerStatus(data,id) {
+      async updateIndexerStatus(data) {
         return new Promise((resolve, reject) => {
           
           _mysqlService._poolBsv20.query(
             `
-             UPDATE indexed SET ? WHERE ID=?
+             UPDATE status SET ? WHERE ID = ?
             `,
-            [data,id],
+            [data,1],
             (err, result) => {
               if (err) {
                 console.error(err);

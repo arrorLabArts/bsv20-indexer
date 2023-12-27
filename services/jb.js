@@ -32,7 +32,7 @@ class JBService {
         }
       });
 
-      //this.initSubBsv20()
+      this.initSubBsv20()
    }
 
 
@@ -50,8 +50,10 @@ class JBService {
         function onError(ctx) {
           console.log(ctx);
         },
-        function onMempool(tx) {
-          _jbHelper.indexTx(tx);
+        async function onMempool(tx) {
+          console.log("found tx : ",tx["id"]);
+          await _jbHelper.indexTx(tx);
+          console.log("mempool tx : ",tx["id"])
 
         });
    }

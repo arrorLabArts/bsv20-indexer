@@ -97,6 +97,21 @@ class MySqlService {
         );
     `;
 
+    const query4 = `
+        INSERT INTO status (indexHeight, indexIdx, settledHeight, settledIdx, state, lastErrorLog, lastErrorLogTimestamp)
+        SELECT 
+            0 AS indexHeight,
+            0 AS indexIdx,
+            0 AS settledHeight,
+            0 AS settledIdx,
+            0 AS state,
+            NULL AS lastErrorLog,
+            0 AS lastErrorLogTimestamp
+        FROM dual
+        WHERE NOT EXISTS (SELECT 1 FROM status);
+      
+    `
+
 
 
 
@@ -105,6 +120,7 @@ class MySqlService {
     const query1Async = util.promisify(this._poolBsv20.query).bind(this._poolBsv20);
     //const query2Async = util.promisify(this._poolBsv20.query).bind(this._poolBsv20);
     const query3Async = util.promisify(this._poolBsv20.query).bind(this._poolBsv20);
+    const query4Async = util.promisify(this._poolBsv20.query).bind(this._poolBsv20);
 
 
     return Promise.all([
@@ -120,6 +136,9 @@ class MySqlService {
       // }),
       query3Async(query3).catch(err => {
         console.error('Error creating table "status":', err);
+      }),
+      query4Async(query4).catch(err => {
+        console.error('Error initializing table "status":', err);
       }),
 
     ]);

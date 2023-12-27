@@ -1,6 +1,9 @@
 const fs = require('fs');
 const path = require('path');
 
+
+const indexerLogPath = path.join(__dirname, '../logs', 'indexer.log');
+
 function saveTransactionLog(obj) {
   let filePath = path.join(__basedir, 'logs', 'transactions.csv');
   let headers = Object.keys(obj);
@@ -152,6 +155,14 @@ function hexToDecimalLittleEndian(hexString) {
   return decimalNumber;
 }
 
+function updateIndexerLog(newContent) {
+  fs.writeFile(indexerLogPath, newContent, 'utf8', err => {
+    if (err) {
+      console.error(`Error updating indexer log: ${err}`);
+    }
+  });
+}
+
 
 
 module.exports = {
@@ -166,5 +177,6 @@ module.exports = {
     getNumberWithMaxDecimal,
     textToHex,
     hexToText,
-    hexToDecimalLittleEndian
+    hexToDecimalLittleEndian,
+    updateIndexerLog
 }

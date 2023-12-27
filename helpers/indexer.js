@@ -18,8 +18,8 @@ class IndexerHelper{
         let tx = Transaction.from_hex(txHex)
 
         for(i=0;i<tx.get_noutputs();i++){
-           let outpoint = `${tx.get_id_hex()}_${ordOutputs[i]["vout"]}`;
            let output = tx.get_output(i);
+           let outpoint = `${tx.get_id_hex()}_${i}`;
            let scriptPubKeyAsm = output.get_script_pub_key().to_asm_string();
            let scriptPubKeyHex = output.get_script_pub_key().to_hex();
            let value = output.get_satoshis();
@@ -76,6 +76,18 @@ class IndexerHelper{
 
           
         }
+
+        if(ordOutputs.length>0){
+
+            let payloadTx = {
+               txid : tx.get_id_hex(),
+               rawHex : txHex,
+            }
+            await _mysqlHelper.addTx(payloadTx);
+
+        }
+
+
        
 
     }
