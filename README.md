@@ -47,7 +47,7 @@ For the Jungle Bus subscription, the BSV-20 indexer utilizes the following confi
 
 - **Output Type:** ord
 - **Context:** application/bsv-20
-- **Data keys:** tick=QlNWUw==,tick=RklSRQ==,tick=RFJBRw==,QklaQQ==
+- **Data keys:** tick=QlNWUw==,tick=RklSRQ==,tick=RFJBRw==,tick=QklaQQ==
 
 These settings define the interaction with the Jungle Bus service and help in processing BSV-20 data effectively.
 
