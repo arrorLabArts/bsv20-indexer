@@ -2,6 +2,7 @@ const bsv20 = require("../consts/bsv20");
 const errors = require("../consts/errors");
 const MysqlHelper = require("../helpers/mysql");
 const { isSupportedTick } = require("../utils/platform");
+const { sanitizeBsv20Insc } = require("../utils/bsv20")
 
 const _mysqlHelper = new MysqlHelper();
 
@@ -10,20 +11,22 @@ const getTickInfo = async(req,res)=>{
     try{
         let tick = req.params["tick"];
         let resDeployInfo = await _mysqlHelper.getInscByTick(bsv20.op.deploy,tick,bsv20.states.valid);
+        
 
         if(isSupportedTick(tick) && resDeployInfo.length>0){
-            let deployInfo = JSON.parse(resDeployInfo);
+            let deployInfo = JSON.parse(resDeployInfo[0]["insc"]);
+            let deplayInfoSantized = sanitizeBsv20Insc(deployInfo);
             let resConfirmedSupply = await _mysqlHelper.getTokenSupply(tick,bsv20.op.mint,bsv20.states.valid);
             let resPendingSupply = await _mysqlHelper.getTokenSupply(tick,bsv20.op.mint,bsv20.states.pending);
             let resOwnersCount = await _mysqlHelper.getOwnersCountByTick(tick);
         
             let tmp = {
                 tick : tick,
-                lim : deployInfo[0]["lim"],
-                max : deployInfo[0]["max"],
-                supply : resConfirmedSupply[0]["supply"],
-                pending : resPendingSupply[0]["supply"],
-                accounts : resOwnersCount[0]["ownersCount"]
+                lim : deplayInfoSantized["lim"],
+                max : deplayInfoSantized["max"],
+                supply : resConfirmedSupply[0]["supply"]||0,
+                pending : resPendingSupply[0]["supply"]||0,
+                accounts : resOwnersCount[0]["ownersCount"]||0
             }
     
             _handleResponse(res,null,{
@@ -94,9 +97,9 @@ const getBalanceByAddress = async(req,res)=>{
             let balanceListed = await _mysqlHelper.getBalanceByAddressAndSubType(tick,address,bsv20.states.valid,bsv20.op.subOp.list);
             
             let tmp = {
-                confirmed : balanceConfirmed,
-                pending : balancePending,
-                listed : balanceListed
+                confirmed : balanceConfirmed[0]["balance"]||0,
+                pending : balancePending[0]["balance"]||0,
+                listed : balanceListed[0]["balance"]||0
             }
             _handleResponse(res,null,{
                 error : false,
@@ -158,23 +161,15 @@ const getUtxoByAddress = async(req,res)=>{
 const getOutpoint = async(req,res)=>{
 
     try{
-        let address = req.params["address"];
-        let tick = req.params["tick"];
+        let outpoint = req.params["outpoint"];
 
-        if(isSupportedTick(tick)){
-            let utxos = await _mysqlHelper.getUtxo(tick,address,bsv20.states.valid);
-            
-            _handleResponse(res,null,{
-                error : false,
-                data : utxos
-            }) 
-        }else{
-            _handleResponse(res,null,{
-                error : false,
-                data : []
-            })  
-        }
-
+        let utxos = await _mysqlHelper.getTxo(outpoint);
+        
+        _handleResponse(res,null,{
+            error : false,
+            data : utxos
+        }) 
+        
     }catch(e){
         _handleResponse(res,null,{
             error : true,

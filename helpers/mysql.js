@@ -14,11 +14,20 @@ class MysqlHelper {
         return new Promise((resolve, reject) => {
           _mysqlService._poolBsv20.query(
             `
-            SELECT
-                *
-            FROM
-                main WHERE state = -1
-                ORDER BY createdAt ASC LIMIT ?
+              SELECT
+                  *
+              FROM
+                  main 
+              WHERE
+                  state = -1
+              ORDER BY
+                  CASE
+                      WHEN height IS NOT NULL AND idx IS NOT NULL THEN height
+                      WHEN height IS NULL AND idx IS NOT NULL THEN idx
+                      ELSE createdAt
+                  END ASC
+              LIMIT ?
+
             `,
             [limit],
             (err, result) => {
@@ -44,7 +53,12 @@ class MysqlHelper {
                 insc
             FROM
                 main WHERE type = ? AND tick = ? AND state = ?
-                ORDER BY createdAt ASC
+                ORDER BY
+                  CASE
+                      WHEN height IS NOT NULL AND idx IS NOT NULL THEN height
+                      WHEN height IS NULL AND idx IS NOT NULL THEN idx
+                      ELSE createdAt
+                  END ASC
             `,
             [type,tick,state],
             (err, result) => {
@@ -212,7 +226,7 @@ class MysqlHelper {
         return new Promise((resolve, reject) => {
           _mysqlService._poolBsv20.query(
             `
-              SELECT txid,vout,outpoint,amt,tick,script FROM main WHERE tick = ? AND address = ? AND state = ?;
+              SELECT txid,vout,outpoint,amt,tick,type as op,subType as subOp,insc,scriptPubKeyHex as script FROM main WHERE tick = ? AND owner = ? AND state = ?;
 
             `,
             [tick,address,state],
@@ -235,10 +249,33 @@ class MysqlHelper {
         return new Promise((resolve, reject) => {
           _mysqlService._poolBsv20.query(
             `
-              SELECT txid,vout,outpoint,tick,insc,type,subType,amt,script,op,state FROM main WHERE outpoint = ?;
+              SELECT txid,vout,outpoint,owner,tick,insc,type as op,subType as subOp,amt,scriptPubKeyHex as script,state FROM main WHERE outpoint = ?;
 
             `,
             [outpoint],
+            (err, result) => {
+              if (err) {
+                console.error(err);
+                _mysqlService._poolBsv20.end();
+                _mysqlService._poolBsv20 = _mysqlService.createPoolBsv20();
+                reject(err);
+              } else {
+                resolve(result)
+                
+              }
+            }
+          );
+        });
+      }
+
+      async getBalanceByAddress(tick,address,state) {
+        return new Promise((resolve, reject) => {
+          _mysqlService._poolBsv20.query(
+            `
+              SELECT SUM(amt) AS balance FROM main WHERE tick = ? AND owner = ? AND state = ?;
+
+            `,
+            [tick,address,state],
             (err, result) => {
               if (err) {
                 console.error(err);
@@ -258,7 +295,7 @@ class MysqlHelper {
         return new Promise((resolve, reject) => {
           _mysqlService._poolBsv20.query(
             `
-              SELECT SUM(amt) AS balance FROM main WHERE tick = ? AND address = ? AND state = ? AND subType = ?;
+              SELECT SUM(amt) AS balance FROM main WHERE tick = ? AND owner = ? AND state = ? AND subType = ?;
 
             `,
             [tick,address,state,subType],

@@ -30,6 +30,7 @@ class IndexerHelper{
                let inscDetails = getInscDetails(envelope);
                if(inscDetails["type"] == "bsv-20" && isSupportedTick(inscDetails["insc"]["tick"])){
                   let ordOutput = {
+                    vout : i,
                     outpoint,
                     inscDetails : getInscDetails(envelope),
                     scriptPubKeyHex,
@@ -48,11 +49,13 @@ class IndexerHelper{
               let payload = {
                   txid : tx.get_id_hex(),
                   height : height,
+                  vout : ordOutputs[i]["vout"],
                   idx : idx,
                   outpoint : ordOutputs[i]["outpoint"],
                   origin : ordOutputs[i]["outpoint"],
-                  inscription : JSON.stringify(ordOutputs[i]["inscDetails"]["insc"]),
+                  insc : JSON.stringify(ordOutputs[i]["inscDetails"]["insc"]),
                   owner : ordOutputs[i]["address"],
+                  scriptPubKeyHex : ordOutputs[i]["scriptPubKeyHex"],
                   tick : ordOutputs[i]["inscDetails"]["insc"]["tick"],
                   state : -1
               };

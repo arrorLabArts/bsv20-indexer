@@ -165,6 +165,8 @@ function updateIndexerLog(newContent) {
 
 
 
+
+
 module.exports = {
     saveTransactionLog,
     arrayToHexString,
@@ -178,5 +180,5 @@ module.exports = {
     textToHex,
     hexToText,
     hexToDecimalLittleEndian,
-    updateIndexerLog
+    updateIndexerLog,
 }

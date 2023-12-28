@@ -10,17 +10,15 @@ function getInscDetails(envelope){
         insc : tokens[6],
     }
 
-    console.log(mimeType);
-
     if(mimeType == "application/bsv-20"){
         
         let inscJson = JSON.parse(hexToText(tokens[6]));
-        console.log(inscJson);
-
-        if(isDeployInsc(inscJson) || isMintInsc(inscJson) || isTransferInsc(inscJson)){
+        let inscSanitized = sanitizeBsv20Insc(inscJson);
+        
+        if(isDeployInsc(inscSanitized) || isMintInsc(inscSanitized) || isTransferInsc(inscSanitized)){
            returnVal = {
               type : "bsv-20",
-              insc : inscJson
+              insc : inscSanitized
            }
         }
         
@@ -45,6 +43,27 @@ function getLockDetails(lockScript){
 
 
 }
+
+function sanitizeBsv20Insc(obj) {
+    const keysToCheck = ["lim", "max", "amt", "dec"];
+  
+    // Iterate over each key in the object
+    for (const key in obj) {
+      // Check if the current key is one of the specified keys
+      if (keysToCheck.includes(key)) {
+        // Check if the value is a string-encoded number
+        if (typeof obj[key] === "string" && !isNaN(parseFloat(obj[key]))) {
+          // Convert the string to a number using parseFloat
+          obj[key] = parseFloat(obj[key]);
+        }
+      }
+    }
+  
+    // Return the modified object
+    return obj;
+  }
+
+
 
 function getOrderLockDetails(scriptPubkeyHex){
     var match = regexOrderLock.exec(scriptPubkeyHex);
@@ -113,7 +132,7 @@ function isDeployInsc(jsonObj){
         }
     }else if(typeof jsonObj.lim === 'string'){
        if(regexNumber.test(jsonObj.lim)){
-          if(parseInt(jsonObj.lim) <= 0){
+          if(parseFloat(jsonObj.lim) <= 0){
            return false;
           }
        }else{
@@ -127,7 +146,7 @@ function isDeployInsc(jsonObj){
          }
     }else if(typeof jsonObj.max === 'string'){
         if(regexNumber.test(jsonObj.max)){
-           if(parseInt(jsonObj.max) <= 0 || parseInt(jsonObj.max) > 2**64 - 1){
+           if(parseFloat(jsonObj.max) <= 0 || parseFloat(jsonObj.max) > 2**64 - 1){
             return false;
            }
         }else{
@@ -185,7 +204,7 @@ function isMintInsc(jsonObj){
             }
         }else if(typeof jsonObj.amt === 'string'){
             if(regexNumber.test(jsonObj.amt)){
-                if(parseInt(jsonObj.amt) <= 0){
+                if(parseFloat(jsonObj.amt) <= 0){
                     return false;
                 }
             }else{
@@ -235,7 +254,7 @@ function isTransferInsc(jsonObj){
          }
     }else if(typeof jsonObj.amt === 'string'){
         if(regexNumber.test(jsonObj.amt)){
-           if(parseInt(jsonObj.amt) <= 0){
+           if(parseFloat(jsonObj.amt) <= 0){
             return false;
            }
         }else{
@@ -252,4 +271,5 @@ module.exports = {
     getInscDetails,
     getLockDetails,
     getOrderLockDetails,
+    sanitizeBsv20Insc
 }
