@@ -1,6 +1,6 @@
 var express = require('express');
 var router = express.Router();
-const { getStatus } = require('../controllers/indexer');
+const { getStatus } = require('../controllers/api');
 
 
 

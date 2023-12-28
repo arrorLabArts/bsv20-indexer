@@ -5,6 +5,7 @@ const { updateIndexerLog } = require("../utils/misc");
 
 const _indexerHelper = new IndexerHelper();
 const _mysqlHelper = new MysqlHelper();
+const _dateTime = new Date();
 
 const indexingQueue = [];
 let indexingRunning = false;
@@ -45,7 +46,7 @@ class JBHelper {
             await _mysqlHelper.updateIndexerStatus({"indexHeight":tx["block_height"]});
             await _mysqlHelper.updateIndexerStatus({"indexIdx":tx["block_index"]});
             await _mysqlHelper.updateIndexerStatus({"state":indexer.states.action});
-            updateIndexerLog(`state : ${indexer.states.action}`);
+            updateIndexerLog(`lastIndexTs : ${_dateTime.getTime()}`);
             processedTxCount = processedTxCount+1;
             indexingRunning = indexingQueue.length > 0;
             this.processIndexingQueue();

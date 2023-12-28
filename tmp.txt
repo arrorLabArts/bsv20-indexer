@@ -1,1 +1,3 @@
 tick=QlNWUw==,tick=RklSRQ==,tick=RFJBRw==,QklaQQ==
+
+TypeError: _mysqlService._poolBsv20.query is not a function

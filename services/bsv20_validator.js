@@ -4,6 +4,7 @@ const path = require("path");
 const bsv20 = require("../consts/bsv20");
 const errors = require("../consts/errors");
 const MysqlHelper = require("../helpers/mysql");
+const { sanitizeBsv20Insc } = require("../utils/bsv20");
 
 const _mysqlHelper = new MysqlHelper();
 
@@ -40,17 +41,42 @@ class Bsv20Validator{
                 }
             }else if(queue[i]["type"] == bsv20.op.mint){
 
-                let deployInsc = await _mysqlHelper.getInscByTick(0,queue[i]["tick"],bsv20.states.valid);
-                if(deployInsc.length > 1){
+                let resDeployInsc = await _mysqlHelper.getInscByTick(bsv20.op.deploy,queue[i]["tick"],bsv20.states.valid);
+                if(resDeployInsc.length > 1){
                     await _mysqlHelper.updateStateOne(queue[i]["tick"],queue[i]["type"],bsv20.states.invalid,queue[i]["outpoint"],errors.bsv20.deploy.reduntantDeploy.message)
-                }else if(deployInsc.length == 0){
+                }else if(resDeployInsc.length == 0){
                     await _mysqlHelper.updateStateOne(queue[i]["tick"],queue[i]["type"],bsv20.states.invalid,queue[i]["outpoint"],errors.bsv20.mint.nullDeploy.message)
                 }else{
-                    let res = await _mysqlHelper.getTokenSupply(queue[i]["tick"],queue[i]["type"],bsv20.states.valid);
-                    if(res[0]["supply"] <= deployInsc["max"] ){
-                        await _mysqlHelper.updateStateOne(queue[i]["tick"],queue[i]["type"],bsv20.states.valid,queue[i]["outpoint"]);
-                    }else{
-                        await _mysqlHelper.updateStateOne(queue[i]["tick"],queue[i]["type"],bsv20.states.invalid,queue[i]["outpoint"],errors.bsv20.mint.supplyOverflow.message);
+                    let deployInscSanitized = sanitizeBsv20Insc(JSON.parse(resDeployInsc[0]["insc"]));
+                    let resSupply = await _mysqlHelper.getTokenSupply(queue[i]["tick"],queue[i]["type"],bsv20.states.valid);
+                    let supply = resSupply[0]["supply"] || 0;
+                    let mintInscSanitized = sanitizeBsv20Insc(JSON.parse(queue[i]["insc"]));
+                    let isAmtExceedingLimit = mintInscSanitized["amt"] > deployInscSanitized["lim"];
+                    let isSupplyWithinMax = (supply + mintInscSanitized["amt"]) <= deployInscSanitized["max"];
+                    
+                    if (isAmtExceedingLimit) {
+                        await _mysqlHelper.updateStateOne(
+                            queue[i]["tick"],
+                            queue[i]["type"],
+                            bsv20.states.invalid,
+                            queue[i]["outpoint"],
+                            errors.bsv20.mint.limitOverflow.message
+                        );
+                    } else if (isSupplyWithinMax) {
+                        await _mysqlHelper.updateStateOne(
+                            queue[i]["tick"],
+                            queue[i]["type"],
+                            bsv20.states.valid,
+                            queue[i]["outpoint"]
+                        );
+                    } else {
+                        await _mysqlHelper.updateStateOne(
+                            queue[i]["tick"],
+                            queue[i]["type"],
+                            bsv20.states.invalid,
+                            queue[i]["outpoint"],
+                            errors.bsv20.mint.supplyOverflow.message
+                        );
                     }
                 }
                 

@@ -268,6 +268,30 @@ class MysqlHelper {
         });
       }
 
+      async getTokensByAddress(address) {
+        return new Promise((resolve, reject) => {
+          _mysqlService._poolBsv20.query(
+            `
+              SELECT DISTINCT tick
+              FROM main
+              WHERE owner = ?;
+            `,
+            [address],
+            (err, result) => {
+              if (err) {
+                console.error(err);
+                _mysqlService._poolBsv20.end();
+                _mysqlService._poolBsv20 = _mysqlService.createPoolBsv20();
+                reject(err);
+              } else {
+                resolve(result)
+                
+              }
+            }
+          );
+        });
+      }
+
       async getBalanceByAddress(tick,address,state) {
         return new Promise((resolve, reject) => {
           _mysqlService._poolBsv20.query(
@@ -393,10 +417,10 @@ class MysqlHelper {
           _mysqlService._poolBsv20.query(
             `
             INSERT INTO main SET ? 
-            ON DUPLICATE KEY UPDATE 
-              height = VALUES(height),
-              idx = VALUES(idx),
-              outpoint = VALUES(outpoint);
+            ON DUPLICATE KEY UPDATE
+              outpoint = VALUES(outpoint),
+              height = IF(ISNULL(VALUES(height)), height, VALUES(height)),
+              idx = IF(ISNULL(VALUES(idx)), idx, VALUES(idx));
             
             `,
             [data],

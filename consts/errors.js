@@ -19,7 +19,16 @@ module.exports = Object.freeze({
         },
         getBalance : {
             code : 22
-        }
+        },
+        getOutpoint : {
+            code : 23
+        },
+        getTxos : {
+            code : 24
+        },
+        submitTx : {
+            code : 25
+        },
     },
     bsv20:{
         insc : {
@@ -30,6 +39,9 @@ module.exports = Object.freeze({
         mint : {
             supplyOverflow : {
                 message : "SUPPLY OVERFLOW"
+            },
+            limitOverflow : {
+                message : "LIMIT OVERFLOW"
             },
             nullDeploy : {
                 message : "TICK DOESN'T EXIST"

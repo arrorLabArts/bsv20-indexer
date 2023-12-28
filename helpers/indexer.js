@@ -81,7 +81,6 @@ class IndexerHelper{
         }
 
         if(ordOutputs.length>0){
-
             let payloadTx = {
                txid : tx.get_id_hex(),
                rawHex : txHex,

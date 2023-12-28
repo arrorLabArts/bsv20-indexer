@@ -1,6 +1,6 @@
 var express = require('express');
 var router = express.Router();
-const { getTickInfo, getMarketOrders, getBalanceByAddress, getUtxoByAddress, getOutpoint  } = require('../controllers/bsv20');
+const { getTickInfo, getMarketOrders, getBalanceByAddress, getUtxoByAddress, getOutpoint, submitTx, getBalanceByAddressAndTick  } = require('../controllers/api');
 
 
 
@@ -178,6 +178,32 @@ router.get('/tick/:tick',getTickInfo);
 
 /**
  * @swagger
+ * /api/bsv20/address/{address}/balance:
+ *   get:
+ *     summary: Get balance data for a specific address
+ *     parameters:
+ *       - in: path
+ *         name: address
+ *         required: true
+ *         description: The address
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *         content:
+ *          application/json:
+ *              schema:
+ *                  type: array
+ *                  items:
+ *                      $ref: '#/components/schemas/TokenBalance'
+ */
+router.get('/address/:address/balance', getBalanceByAddress);
+
+
+
+/**
+ * @swagger
  * /api/bsv20/address/{address}/balance/{tick}:
  *   get:
  *     summary: Get balance data for a specific address and tick
@@ -202,7 +228,7 @@ router.get('/tick/:tick',getTickInfo);
  *              schema:
  *                  $ref: '#/components/schemas/TokenBalance'
  */
-router.get('/address/:address/balance/:tick', getBalanceByAddress);
+router.get('/address/:address/balance/:tick', getBalanceByAddressAndTick);
 
 /**
  * @swagger
@@ -253,5 +279,25 @@ router.get('/address/:address/utxos/:tick', getUtxoByAddress);
  *                  $ref: '#/components/schemas/InscTxo'
  */
 router.get('/outpoint/:outpoint', getOutpoint);
+
+/**
+ * @swagger
+ * /api/bsv20/tx/{txid}/submit:
+ *   get:
+ *     summary: Submit txid for indexing
+ *     parameters:
+ *       - in: path
+ *         name: txid
+ *         required: true
+ *         description: The id of the transaction
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *         content:
+ */
+router.get('/tx/:txid/submit', submitTx);
+
 
 module.exports = router;

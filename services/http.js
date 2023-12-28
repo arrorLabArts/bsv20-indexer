@@ -19,6 +19,14 @@ class HttpService{
         return data;
       }
 
+      async getReqText(url) {
+        let response = await fetch(url);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.text();
+      }
+
      async postReq(url, payload) {
         let response = await fetch(url, {
           method: 'POST',

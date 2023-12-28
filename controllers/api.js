@@ -1,10 +1,14 @@
 const bsv20 = require("../consts/bsv20");
 const errors = require("../consts/errors");
 const MysqlHelper = require("../helpers/mysql");
+const WocHelper = require("../helpers/woc")
+const FsMempoolService = require("../services/fs_mempool")
 const { isSupportedTick } = require("../utils/platform");
-const { sanitizeBsv20Insc } = require("../utils/bsv20")
+const { sanitizeBsv20Insc } = require("../utils/bsv20");
 
 const _mysqlHelper = new MysqlHelper();
+const _fsMempoolService = new FsMempoolService();
+const _wocHelper = new WocHelper();
 
 const getTickInfo = async(req,res)=>{
 
@@ -85,7 +89,7 @@ const getMarketOrders = async(req,res)=>{
     
 }
 
-const getBalanceByAddress = async(req,res)=>{
+const getBalanceByAddressAndTick = async(req,res)=>{
 
     try{
         let address = req.params["address"];
@@ -125,6 +129,48 @@ const getBalanceByAddress = async(req,res)=>{
     
 }
 
+const getBalanceByAddress = async(req,res)=>{
+
+    try{
+        let address = req.params["address"];
+        let resTokens = await _mysqlHelper.getTokensByAddress(address)
+        let balanaces = [];
+
+        let i;
+        for(i=0;i<resTokens.length;i++){
+            if(isSupportedTick(resTokens[i]["tick"])){
+                let balanceConfirmed = await _mysqlHelper.getBalanceByAddress(resTokens[i]["tick"],address,bsv20.states.valid);
+                let balancePending = await _mysqlHelper.getBalanceByAddress(resTokens[i]["tick"],address,bsv20.states.pending);
+                let balanceListed = await _mysqlHelper.getBalanceByAddressAndSubType(resTokens[i]["tick"],address,bsv20.states.valid,bsv20.op.subOp.list);
+                
+                let tmp = {
+                    tick : resTokens[i]["tick"],
+                    confirmed : balanceConfirmed[0]["balance"]||0,
+                    pending : balancePending[0]["balance"]||0,
+                    listed : balanceListed[0]["balance"]||0
+                }
+                balanaces.push(tmp);
+            }
+        }
+
+        _handleResponse(res,null,{
+            error : false,
+            data : balanaces
+        })  
+
+    }catch(e){
+        _handleResponse(res,null,{
+            error : true,
+            code : errors.api.getBalance.code,
+            message : e.toString()
+        }) 
+    }
+
+
+
+    
+}
+
 const getUtxoByAddress = async(req,res)=>{
 
     try{
@@ -148,7 +194,7 @@ const getUtxoByAddress = async(req,res)=>{
     }catch(e){
         _handleResponse(res,null,{
             error : true,
-            code : errors.api.getBalance.code,
+            code : errors.api.getTxos.code,
             message : e.toString()
         }) 
     }
@@ -173,7 +219,7 @@ const getOutpoint = async(req,res)=>{
     }catch(e){
         _handleResponse(res,null,{
             error : true,
-            code : errors.api.getBalance.code,
+            code : errors.api.getOutpoint.code,
             message : e.toString()
         }) 
     }
@@ -183,6 +229,39 @@ const getOutpoint = async(req,res)=>{
     
 }
 
+const getStatus = async(req,res)=>{
+    try{
+       let statusInfo = await _mysqlHelper.getIndexerStatus();
+       _handleResponse(res,null,{
+           error : false,
+           data : statusInfo[0]
+       })
+    }catch(e){
+       _handleResponse(res,null,{
+           error : true,
+           code : errors.indexer.status.code,
+           message : e.toString()
+       })
+    }
+}
+
+const submitTx = async(req,res)=>{
+    try{
+        let txid = req.params["txid"];
+        let txHex = await _wocHelper.getRawTx(txid);
+        await _fsMempoolService.indexTx(txHex);
+       _handleResponse(res,null,{
+           error : false,
+       })
+    }catch(e){
+       _handleResponse(res,null,{
+           error : true,
+           code : errors.api.submitTx.code,
+           message : e.toString()
+       })
+    }
+}
+
 
 
 
@@ -190,6 +269,9 @@ module.exports = {
     getTickInfo,
     getMarketOrders,
     getBalanceByAddress,
+    getBalanceByAddressAndTick,
     getUtxoByAddress,
-    getOutpoint
+    getOutpoint,
+    getStatus,
+    submitTx
 }

@@ -26,7 +26,7 @@ const runtimeConfig = {
             } else {
                 if (cluster.worker.id === 1) {
                     await mysqlService.init("Junglebus");
-                    jbService.init();
+                    await jbService.init();
                 } else if(cluster.worker.id === 2) {
                     await mysqlService.init("Api Server");
                     apiServer.start();
