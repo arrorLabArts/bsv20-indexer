@@ -65,7 +65,7 @@ const getMarketOrders = async(req,res)=>{
         let offset = req.query["offset"]||0;
 
         if(isSupportedTick(tick)){
-            let orders = await _mysqlHelper.getOrders(tick,bsv20.states.valid);
+            let orders = await _mysqlHelper.getOrders(tick,bsv20.states.valid,limit,offset);
     
             _handleResponse(res,null,{
                 error : false,
