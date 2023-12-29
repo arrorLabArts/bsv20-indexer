@@ -2,9 +2,6 @@ const MysqlService = require("../services/mysql")
 const _ = require('lodash');
 const bsv20 = require("../consts/bsv20");
 
-const _dateTime = new Date();
-
-
 const _mysqlService = new MysqlService()
 
 class MysqlHelper {
@@ -249,7 +246,7 @@ class MysqlHelper {
         return new Promise((resolve, reject) => {
           _mysqlService._poolBsv20.query(
             `
-              SELECT txid,vout,outpoint,owner,tick,insc,type as op,subType as subOp,amt,scriptPubKeyHex as script,state FROM main WHERE outpoint = ?;
+              SELECT txid,vout,outpoint,owner,tick,insc,type as op,subType as subOp,amt,scriptPubKeyHex as script,state,reason FROM main WHERE outpoint = ?;
 
             `,
             [outpoint],
@@ -339,14 +336,22 @@ class MysqlHelper {
       }
 
 
-      async getOrders(tick,state) {
+      async getOrders(tick, state, limit, offset) {
         return new Promise((resolve, reject) => {
           _mysqlService._poolBsv20.query(
             `
-              SELECT txid,vout,outpoint,owner,tick,amt,state,type as op,subType as subOp,orderLockInfo as orderlock,scriptPubKeyHex as script FROM main where subType = ? AND tick = ? AND state = ?;
+            SELECT
+              txid, vout, outpoint, owner, tick, amt, state,
+              type as op, subType as subOp, orderLockInfo as orderlock,
+              scriptPubKeyHex as script,
+              IFNULL(price / amt, 0) as pricePerTick
+            FROM main
+            WHERE subType = ? AND tick = ? AND state = ?
+            ORDER BY pricePerTick ASC
+            LIMIT ? OFFSET ?;
 
             `,
-            [bsv20.op.subOp.list,tick,state],
+            [bsv20.op.subOp.list, tick, state, limit, offset],
             (err, result) => {
               if (err) {
                 console.error(err);
@@ -434,6 +439,8 @@ class MysqlHelper {
 
       async indexInscOutpoint(data) {
         return new Promise((resolve, reject) => {
+          const _dateTime = new Date();
+
 
           data["createdAt"] = _dateTime.getTime();
 
@@ -465,6 +472,7 @@ class MysqlHelper {
       async addTx(data) {
         return new Promise((resolve, reject) => {
 
+          const _dateTime = new Date();
           data["createdAt"] = _dateTime.getTime();
 
           _mysqlService._poolBsv20.query(

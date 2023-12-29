@@ -111,11 +111,17 @@ class Bsv20Validator{
                 let totalAmtOutputs = 0;
 
                 for(j=0;j<nInputs;j++){
-                    let outpoint = `${tx.get_input(j).get_prev_tx_id_hex()}_${j}`;
+                    let outpoint = `${tx.get_input(j).get_prev_tx_id_hex()}_${tx.get_input(j).get_vout()}`;
                     let resOutpoint = await _mysqlHelper.getTxo(outpoint);
                     if(resOutpoint.length>0){
 
-                        if(resOutpoint[0]["state"]!==bsv20.states.valid || resOutpoint[0]["state"] == bsv20.states.listed){
+                        if(resOutpoint[0]["state"] == bsv20.states.valid || resOutpoint[0]["state"] == bsv20.states.listed){
+                            if(resOutpoint[0]["state"] == bsv20.states.listed){
+                                if(queue[i]["subType"] != bsv20.op.subOp.list){
+                                    totalAmtInputs = totalAmtInputs + resOutpoint[0]["amt"];
+                                }
+                            }
+                        }else{
                             totalAmtInputs = totalAmtInputs + resOutpoint[0]["amt"];
                         }
 

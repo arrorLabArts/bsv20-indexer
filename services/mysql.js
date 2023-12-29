@@ -61,6 +61,7 @@ class MySqlService {
            owner TEXT NOT NULL,
            tick TEXT NOT NULL,
            amt DOUBLE DEFAULT 0,
+           price DOUBLE DEFAULT 0,
            state INT DEFAULT -1,
            type INT NOT NULL,
            subType INT DEFAULT 0,

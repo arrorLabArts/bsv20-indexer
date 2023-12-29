@@ -75,7 +75,8 @@ class IndexerHelper{
                     let orderDetails = getOrderLockDetailsV2(ordOutputs[i]["scriptPubKeyAsm"]);
                     payload["orderLockInfo"] = JSON.stringify(orderDetails);
                     payload["subType"] = bsv20.op.subOp.list;
-                    let outpoint = `${tx.get_input(i).get_prev_tx_id_hex()}_${i}`
+                    payload["price"] = orderDetails["orderValue"];
+                    let outpoint = `${tx.get_input(i).get_prev_tx_id_hex()}_${tx.get_input(i).get_vout()}`
                     let outpointDetails = await _mysqlHelper.getTxo(outpoint);
                     if(outpointDetails.length>0){
                         payload["amt"] = ordOutputs[i]["inscDetails"]["insc"]["amt"];
