@@ -19,7 +19,7 @@ class JBService {
    async init(){
      
     let resIndexerStatus = await _mysqlHelper.getIndexerStatus();
-    jbSubHeight = resIndexerStatus[0]["settledHeight"]>jbSubHeight?resIndexerStatus[0]["settledHeight"]:jbSubHeight;
+    jbSubHeight = resIndexerStatus[0]["[settledHeight]"]>jbSubHeight?resIndexerStatus[0]["settledHeight"]:jbSubHeight;
 
      this._client = new JungleBusClient(process.env.JB_BASE_URL, {
         onConnected(ctx) {
@@ -51,7 +51,15 @@ class JBService {
         jbSubId,
         jbSubHeight,
         async function onPublish(tx) {
-          await _jbHelper.indexTx(tx);
+
+            if(tx['block_height'] <= process.env.INDEX_CHECKPOINT){
+              await _jbHelper.indexTx(tx);
+            }else{
+              let indexerStatus = await _mysqlHelper.getIndexerStatus();
+              if(indexerStatus[0]["settledHeight"] >= process.env.INDEX_CHECKPOINT){
+                await _jbHelper.indexTx(tx);
+              }
+            }
       
         },
         function onStatus(ctx) {
@@ -61,8 +69,14 @@ class JBService {
           console.log(ctx);
         },
         async function onMempool(tx) {
-          await _jbHelper.indexTx(tx);
-
+            if(tx['block_height'] <= process.env.INDEX_CHECKPOINT){
+              await _jbHelper.indexTx(tx);
+            }else{
+              let indexerStatus = await _mysqlHelper.getIndexerStatus();
+              if(indexerStatus[0]["settledHeight"] >= process.env.INDEX_CHECKPOINT){
+                await _jbHelper.indexTx(tx);
+              }
+            }
         });
    }
 

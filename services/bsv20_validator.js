@@ -115,14 +115,18 @@ class Bsv20Validator{
                     let resOutpoint = await _mysqlHelper.getTxo(outpoint);
                     if(resOutpoint.length>0){
 
-                        if(resOutpoint[0]["state"] == bsv20.states.valid || resOutpoint[0]["state"] == bsv20.states.listed){
-                            if(resOutpoint[0]["state"] == bsv20.states.listed){
+                        if(resOutpoint[0]["state"] == bsv20.states.valid ){
+
+                            if(resOutpoint[0]["subType"] == bsv20.op.subOp.list){
                                 if(queue[i]["subType"] != bsv20.op.subOp.list){
                                     totalAmtInputs = totalAmtInputs + resOutpoint[0]["amt"];
                                 }
+                            }else{
+                                totalAmtInputs = totalAmtInputs + resOutpoint[0]["amt"];
                             }
-                        }else{
-                            totalAmtInputs = totalAmtInputs + resOutpoint[0]["amt"];
+                            
+
+                            
                         }
 
 
@@ -141,6 +145,7 @@ class Bsv20Validator{
                         outpointsTxOut.push(outpoint);
                     }
                 }
+
 
                 if(totalAmtInputs<totalAmtOutputs){
                     await _mysqlHelper.updateStateMany(outpointsTxIn,bsv20.states.burned,errors.bsv20.transfer.lowerInputAmt.message);
