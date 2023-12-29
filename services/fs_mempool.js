@@ -27,7 +27,6 @@ class FsMempool {
 
     async processIndexingQueue(){
         if (!indexingRunning && indexingQueue.length > 0) {
-
             let tx = indexingQueue.shift();
             await _indexerHelper.indexBsv20(tx,null,null);
             updateIndexerLog(`ts : ${_dateTime.getTime()}`);

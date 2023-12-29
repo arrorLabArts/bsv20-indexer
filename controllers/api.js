@@ -165,6 +165,7 @@ const getBalanceByAddress = async(req,res)=>{
         for(i=0;i<resTokens.length;i++){
             if(isSupportedTick(resTokens[i]["tick"])){
                 let balanceConfirmed = await _mysqlHelper.getBalanceByAddress(resTokens[i]["tick"],address,bsv20.states.valid);
+                console.log(balanceConfirmed);
                 let balancePending = await _mysqlHelper.getBalanceByAddress(resTokens[i]["tick"],address,bsv20.states.pending);
                 let balanceListed = await _mysqlHelper.getBalanceByAddressAndSubType(resTokens[i]["tick"],address,bsv20.states.valid,bsv20.op.subOp.list);
                 

@@ -85,6 +85,8 @@ class IndexerHelper{
                         payload["state"] = bsv20.states.nullOwner;
                     }
                     
+                  }else{
+                    payload["amt"] = ordOutputs[i]["inscDetails"]["insc"]["amt"];
                   }
               }
 

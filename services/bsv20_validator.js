@@ -114,16 +114,25 @@ class Bsv20Validator{
                     let outpoint = `${tx.get_input(j).get_prev_tx_id_hex()}_${j}`;
                     let resOutpoint = await _mysqlHelper.getTxo(outpoint);
                     if(resOutpoint.length>0){
+
+                        if(resOutpoint[0]["state"]!==bsv20.states.valid || resOutpoint[0]["state"] == bsv20.states.listed){
+                            totalAmtInputs = totalAmtInputs + resOutpoint[0]["amt"];
+                        }
+
+
                         outpointsTxIn.push(outpoint);
-                        totalAmtInputs = totalAmtInputs + resOutpoint[0]["amt"];
                     }
                 }
                 for(j=0;j<nOutputs;j++){
                     let outpoint = `${tx.get_id_hex()}_${j}`
                     let resOutpoint = await _mysqlHelper.getTxo(outpoint);
                     if(resOutpoint.length>0){
+
+                        if(resOutpoint[0]["state"] == bsv20.states.pending){
+                            totalAmtOutputs = totalAmtOutputs + resOutpoint[0]["amt"];
+                        }
+
                         outpointsTxOut.push(outpoint);
-                        totalAmtOutputs = totalAmtOutputs + resOutpoint[0]["amt"];
                     }
                 }
 
