@@ -64,6 +64,22 @@ function sanitizeBsv20Insc(obj) {
   }
 
 
+  function getOrderLockDetailsV2(scriptPubkeyAsm){
+
+    let tokens = scriptPubkeyAsm.split(" ")
+    let payOutHex = tokens[6]
+    let txOutPayOut = TxOut.from_hex(tokens[6]).to_json();
+    let tmp = {
+            "payOutHex" : payOutHex,
+            "orderValue" : txOutPayOut["value"],
+            "address" : P2PKHAddress.from_pubkey_hash(Buffer.from(txOutPayOut["script_pub_key"][2],"hex")).to_string(),
+
+    }
+
+    return tmp;
+   
+}
+
 
 function getOrderLockDetails(scriptPubkeyHex){
     var match = regexOrderLock.exec(scriptPubkeyHex);
@@ -271,5 +287,6 @@ module.exports = {
     getInscDetails,
     getLockDetails,
     getOrderLockDetails,
+    getOrderLockDetailsV2,
     sanitizeBsv20Insc
 }

@@ -51,7 +51,6 @@ class JBService {
         jbSubId,
         jbSubHeight,
         async function onPublish(tx) {
-          console.log("tx found");
           await _jbHelper.indexTx(tx);
       
         },
@@ -62,7 +61,6 @@ class JBService {
           console.log(ctx);
         },
         async function onMempool(tx) {
-          console.log("mempool tx found");
           await _jbHelper.indexTx(tx);
 
         });

@@ -1,6 +1,6 @@
 var express = require('express');
 var router = express.Router();
-const { getTickInfo, getMarketOrders, getBalanceByAddress, getUtxoByAddress, getOutpoint, submitTx, getBalanceByAddressAndTick  } = require('../controllers/api');
+const { getTickInfo, getMarketOrders, getBalanceByAddress, getUtxoByAddress, getOutpoint, submitTx, getBalanceByAddressAndTick, getMarketOrdersByAddress  } = require('../controllers/api');
 
 
 
@@ -152,6 +152,58 @@ const { getTickInfo, getMarketOrders, getBalanceByAddress, getUtxoByAddress, get
  * 
  */
 router.get('/market/:tick', getMarketOrders);
+
+/**
+ * @swagger
+ * /api/bsv20/market/address/{address}/tick/{tick}:
+ *   get:
+ *     summary: Get market orders of a token
+ *     parameters:
+ *       - in: path
+ *         name: address
+ *         required: true
+ *         description: The owner address
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: tick
+ *         required: true
+ *         description: The ticker symbol
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: sort
+ *         description: Sort parameter
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: limit
+ *         description: Limit parameter
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: offset
+ *         description: Offset parameter
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: valid
+ *         description: Valid parameter
+ *         schema:
+ *           type: boolean
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *         content:
+ *          application/json:
+ *              schema:
+ *                  type: array
+ *                  items:
+ *                      $ref: '#/components/schemas/Order'
+ * 
+ */
+router.get('/market/address/:address/tick/:tick', getMarketOrdersByAddress);
+
 
 /**
  * @swagger

@@ -2,7 +2,11 @@ const { regexOrdEnvelope, regexLockPrefix, regexLockSuffix, regexP2pkh, regexOrd
 const {P2PKHAddress} = require("bsv-wasm");
 
 function is1SatScript(scriptPubKeyAsm){
-    return  regexOrdEnvelope.test(scriptPubKeyAsm) && regexP2pkh.test(scriptPubKeyAsm);
+    return  regexOrdEnvelope.test(scriptPubKeyAsm);
+}
+
+function isP2pkhScript(scriptPubKeyAsm){
+    return regexP2pkh.test(scriptPubKeyAsm)
 }
 
 function isOrderLockScript(scriptPubKeyHex){
@@ -78,6 +82,7 @@ function getNetAmtFromInscList(inscList){
 
 module.exports = {
     is1SatScript,
+    isP2pkhScript,
     getOrdEnvelope,
     getAddressFromLockScript,
     getAddressP2pkhScript,

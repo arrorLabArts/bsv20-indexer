@@ -1,7 +1,7 @@
-const {Transaction} = require("bsv-wasm");
+const {Transaction, TxOut} = require("bsv-wasm");
 const bsv20 = require("../consts/bsv20");
-const { getInscDetails,getOrderLockDetails } = require("../utils/bsv20");
-const { is1SatScript, getOrdEnvelope, getAddressP2pkhScript, getP2pkhScript, isOrderLockScript } = require("../utils/ord");
+const { getInscDetails,getOrderLockDetails, getOrderLockDetailsV2 } = require("../utils/bsv20");
+const { is1SatScript, getOrdEnvelope, getAddressP2pkhScript, getP2pkhScript, isOrderLockScript, isP2pkhScript } = require("../utils/ord");
 const { isSupportedTick } = require("../utils/platform");
 const MysqlHelper = require("./mysql");
 
@@ -26,7 +26,7 @@ class IndexerHelper{
 
            if(value ==1 && is1SatScript(scriptPubKeyAsm)){
                let envelope = getOrdEnvelope(scriptPubKeyAsm);
-               let p2pkhScript = getP2pkhScript(scriptPubKeyAsm);
+               let p2pkhScript = isP2pkhScript(scriptPubKeyAsm)?getP2pkhScript(scriptPubKeyAsm):null;
                let inscDetails = getInscDetails(envelope);
                if(inscDetails["type"] == "bsv-20" && isSupportedTick(inscDetails["insc"]["tick"])){
                   let ordOutput = {
@@ -34,7 +34,8 @@ class IndexerHelper{
                     outpoint,
                     inscDetails : getInscDetails(envelope),
                     scriptPubKeyHex,
-                    address : getAddressP2pkhScript(p2pkhScript)
+                    scriptPubKeyAsm,
+                    address : p2pkhScript?getAddressP2pkhScript(p2pkhScript) : null
                   };
 
                   ordOutputs.push(ordOutput);
@@ -63,15 +64,27 @@ class IndexerHelper{
               if(ordOutputs[i]["inscDetails"]["insc"]["op"] == "deploy"){
                   payload["amt"] = 0;
                   payload["type"] = bsv20.op.deploy;
-              }else if(ordOutputs[i]["inscDetails"]["insc"]["op"] == "mint"){
+              }
+              
+              if(ordOutputs[i]["inscDetails"]["insc"]["op"] == "mint"){
                   payload["amt"] = ordOutputs[i]["inscDetails"]["insc"]["amt"];
                   payload["type"] = bsv20.op.mint;
               }else if(ordOutputs[i]["inscDetails"]["insc"]["op"] == "transfer"){
                   payload["type"] = bsv20.op.transfer;
                   if(isOrderLockScript(ordOutputs[i]["scriptPubKeyHex"])){
-                    let orderDetails = getOrderLockDetails(ordOutputs[i]["scriptPubKeyHex"]);
+                    let orderDetails = getOrderLockDetailsV2(ordOutputs[i]["scriptPubKeyAsm"]);
                     payload["orderLockInfo"] = JSON.stringify(orderDetails);
                     payload["subType"] = bsv20.op.subOp.list;
+                    let outpoint = `${tx.get_input(i).get_prev_tx_id_hex()}_${i}`
+                    let outpointDetails = await _mysqlHelper.getTxo(outpoint);
+                    if(outpointDetails.length>0){
+                        payload["amt"] = ordOutputs[i]["inscDetails"]["insc"]["amt"];
+                        payload["owner"] = outpointDetails[0]["owner"];
+                    }else{
+                        payload["owner"] = "n/a";
+                        payload["state"] = bsv20.states.nullOwner;
+                    }
+                    
                   }
               }
 

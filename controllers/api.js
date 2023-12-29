@@ -83,10 +83,35 @@ const getMarketOrders = async(req,res)=>{
             message : e.toString()
         }) 
     }
+}
 
+const getMarketOrdersByAddress = async(req,res)=>{
 
+    try{
+        let address = req.params["address"];
+        let tick = req.params["tick"];
 
+        if(isSupportedTick(tick)){
+            let orders = await _mysqlHelper.getOrdersByAddress(address,tick,bsv20.states.valid);
     
+            _handleResponse(res,null,{
+                error : false,
+                data : orders
+            }) 
+        }else{
+            _handleResponse(res,null,{
+                error : false,
+                data : []
+            })  
+        }
+
+    }catch(e){
+        _handleResponse(res,null,{
+            error : true,
+            code : errors.api.getMarketOrders.code,
+            message : e.toString()
+        }) 
+    }
 }
 
 const getBalanceByAddressAndTick = async(req,res)=>{
@@ -268,10 +293,12 @@ const submitTx = async(req,res)=>{
 module.exports = {
     getTickInfo,
     getMarketOrders,
+    getMarketOrdersByAddress,
     getBalanceByAddress,
     getBalanceByAddressAndTick,
     getUtxoByAddress,
     getOutpoint,
     getStatus,
     submitTx
+
 }

@@ -5,10 +5,13 @@ const bsv20 = require("../consts/bsv20");
 const errors = require("../consts/errors");
 const MysqlHelper = require("../helpers/mysql");
 const { sanitizeBsv20Insc } = require("../utils/bsv20");
+const { delay } = require("../utils/misc");
 
 const _mysqlHelper = new MysqlHelper();
 
 const logPath = path.join(__dirname, '../logs', 'indexer.log');
+
+let validationRunning = false;
 
 
 
@@ -19,19 +22,29 @@ class Bsv20Validator{
             persistent: true,
           }); 
           watcher
-          .on('change', path => this.validate())
+          .on('change', path => {
+            if(!validationRunning){
+                this.validate();
+            }
+          })
           watcher.on('error', error => console.error(`Watcher error: ${error}`));
           process.on('SIGINT', () => {
             watcher.close();
             process.exit(0);
           });
+
+          while(!validationRunning){
+             await delay(10000);
+             this.validate();
+          }
         
-        }
+    }
 
     async validate(){
         let i;
         let queue = await _mysqlHelper.getValidationQueue(100);
         for(i=0;i<queue.length;i++){
+            validationRunning = true;
             if(queue[i]["type"] == bsv20.op.deploy){
                 let res = await _mysqlHelper.getInscByTick(queue[i]["type"],queue[i]["tick"],bsv20.states.valid);
                 if(res.length == 0){
@@ -39,7 +52,9 @@ class Bsv20Validator{
                 }else{
                     await _mysqlHelper.updateStateOne(queue[i]["tick"],queue[i]["type"],bsv20.states.invalid,queue[i]["outpoint"],errors.bsv20.deploy.reduntantDeploy.message);
                 }
-            }else if(queue[i]["type"] == bsv20.op.mint){
+            }
+            
+            if(queue[i]["type"] == bsv20.op.mint){
 
                 let resDeployInsc = await _mysqlHelper.getInscByTick(bsv20.op.deploy,queue[i]["tick"],bsv20.states.valid);
                 if(resDeployInsc.length > 1){
@@ -80,23 +95,37 @@ class Bsv20Validator{
                     }
                 }
                 
-            }else if(queue[i]["type"] == bsv20.op.transfer){
-                let i;
+            }
+            
+            if(queue[i]["type"] == bsv20.op.transfer){
+                let j;
                 let res = await _mysqlHelper.getTx(queue[i]["txid"]);
                 let tx = Transaction.from_hex(res[0]["rawHex"]);
                 let nInputs = tx.get_ninputs();
                 let nOutputs = tx.get_noutputs();
+
                 let outpointsTxIn = [];
                 let outpointsTxOut = [];
-                for(i=0;i<nInputs;i++){
-                    outpointsTxIn.push(tx.get_input(i).get_outpoint_hex(true))
-                }
-                for(i=0;nOutputs;i++){
-                    outpointsTxOut.push(`${tx.get_id_hex()}_${i}`);
-                }
 
-                let totalAmtInputs = await _mysqlHelper.getTotalAmtByOutpoints(outpointsTxIn,queue[i]["owner"],bsv20.states.valid);
-                let totalAmtOutputs = await _mysqlHelper.getTotalAmtByOutpoints(outpointsTxOut,queue[i]["owner"],bsv20.states.valid);
+                let totalAmtInputs = 0;
+                let totalAmtOutputs = 0;
+
+                for(j=0;j<nInputs;j++){
+                    let outpoint = `${tx.get_input(j).get_prev_tx_id_hex()}_${j}`;
+                    let resOutpoint = await _mysqlHelper.getTxo(outpoint);
+                    if(resOutpoint.length>0){
+                        outpointsTxIn.push(outpoint);
+                        totalAmtInputs = totalAmtInputs + resOutpoint[0]["amt"];
+                    }
+                }
+                for(j=0;j<nOutputs;j++){
+                    let outpoint = `${tx.get_id_hex()}_${j}`
+                    let resOutpoint = await _mysqlHelper.getTxo(outpoint);
+                    if(resOutpoint.length>0){
+                        outpointsTxOut.push(outpoint);
+                        totalAmtOutputs = totalAmtOutputs + resOutpoint[0]["amt"];
+                    }
+                }
 
                 if(totalAmtInputs<totalAmtOutputs){
                     await _mysqlHelper.updateStateMany(outpointsTxIn,bsv20.states.burned,errors.bsv20.transfer.lowerInputAmt.message);
@@ -114,10 +143,8 @@ class Bsv20Validator{
                     "settledIdx" : queue[i]["idx"]
                 })
             }
-
-
-            
         }
+        validationRunning = false;
 
     }
 }

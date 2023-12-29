@@ -226,7 +226,7 @@ class MysqlHelper {
         return new Promise((resolve, reject) => {
           _mysqlService._poolBsv20.query(
             `
-              SELECT txid,vout,outpoint,amt,tick,type as op,subType as subOp,insc,scriptPubKeyHex as script FROM main WHERE tick = ? AND owner = ? AND state = ?;
+              SELECT txid,vout,outpoint,amt,tick,type as op,subType as subOp,insc,scriptPubKeyHex as script,state FROM main WHERE tick = ? AND owner = ? AND state = ?;
 
             `,
             [tick,address,state],
@@ -343,10 +343,33 @@ class MysqlHelper {
         return new Promise((resolve, reject) => {
           _mysqlService._poolBsv20.query(
             `
-              SELECT * FROM main where subType = ? AND tick = ? AND state = ?;
+              SELECT txid,vout,outpoint,owner,tick,amt,state,type as op,subType as subOp,orderLockInfo as orderlock,scriptPubKeyHex as script FROM main where subType = ? AND tick = ? AND state = ?;
 
             `,
             [bsv20.op.subOp.list,tick,state],
+            (err, result) => {
+              if (err) {
+                console.error(err);
+                _mysqlService._poolBsv20.end();
+                _mysqlService._poolBsv20 = _mysqlService.createPoolBsv20();
+                reject(err);
+              } else {
+                resolve(result)
+                
+              }
+            }
+          );
+        });
+      }
+
+      async getOrdersByAddress(address,tick,state) {
+        return new Promise((resolve, reject) => {
+          _mysqlService._poolBsv20.query(
+            `
+              SELECT txid,vout,outpoint,owner,tick,amt,state,type as op,subType as subOp,orderLockInfo as orderlock,scriptPubKeyHex as script FROM main WHERE owner = ? AND subType = ? AND tick = ? AND state = ?;
+
+            `,
+            [address,bsv20.op.subOp.list,tick,state],
             (err, result) => {
               if (err) {
                 console.error(err);
@@ -493,7 +516,7 @@ class MysqlHelper {
             `
             SELECT SUM(amt) AS totalAmt
             FROM main
-            WHERE outpoint IN (?) AND owner = ? AND state = ?;
+            WHERE outpoint IN (?) ;
             `,
             [outpoints,address,state],
             (err, result) => {

@@ -4,7 +4,9 @@ module.exports = Object.freeze({
         "invalid" : 0,
         "valid" : 1,
         "spent" : 2,
-        "burned" : 3
+        "burned" : 3,
+        "listed" : 4,
+        "nullOwner" : 5
     },
     op : {
        deploy : 0,
@@ -14,5 +16,6 @@ module.exports = Object.freeze({
           list : 1
        }
     },
+    
 
 })
