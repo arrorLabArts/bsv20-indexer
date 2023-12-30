@@ -30,7 +30,7 @@ class FsMempool {
             let tx = indexingQueue.shift();
             await _indexerHelper.indexBsv20(tx,null,null);
             updateIndexerLog(`ts : ${_dateTime.getTime()}`);
-            indexingRunning = indexingQueue.length > 0;
+            indexingRunning = false;
             this.processIndexingQueue();
 
         }

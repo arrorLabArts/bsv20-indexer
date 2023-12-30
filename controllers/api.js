@@ -2,13 +2,15 @@ const bsv20 = require("../consts/bsv20");
 const errors = require("../consts/errors");
 const MysqlHelper = require("../helpers/mysql");
 const WocHelper = require("../helpers/woc")
-const FsMempoolService = require("../services/fs_mempool")
+const FsMempoolService = require("../services/fs_mempool");
+const TransactionHelper = require("../helpers/tx")
 const { isSupportedTick } = require("../utils/platform");
 const { sanitizeBsv20Insc } = require("../utils/bsv20");
 
 const _mysqlHelper = new MysqlHelper();
 const _fsMempoolService = new FsMempoolService();
 const _wocHelper = new WocHelper();
+const _transactionHelper = new TransactionHelper();
 
 const getTickInfo = async(req,res)=>{
 
@@ -167,7 +169,6 @@ const getBalanceByAddress = async(req,res)=>{
         for(i=0;i<resTokens.length;i++){
             if(isSupportedTick(resTokens[i]["tick"])){
                 let balanceConfirmed = await _mysqlHelper.getBalanceByAddress(resTokens[i]["tick"],address,bsv20.states.valid);
-                console.log(balanceConfirmed);
                 let balancePending = await _mysqlHelper.getBalanceByAddress(resTokens[i]["tick"],address,bsv20.states.pending);
                 let balanceListed = await _mysqlHelper.getBalanceByAddressAndSubType(resTokens[i]["tick"],address,bsv20.states.valid,bsv20.op.subOp.list);
                 
@@ -276,11 +277,18 @@ const getStatus = async(req,res)=>{
 const submitTx = async(req,res)=>{
     try{
         let txid = req.params["txid"];
-        let txHex = await _wocHelper.getRawTx(txid);
-        await _fsMempoolService.indexTx(txHex);
-       _handleResponse(res,null,{
-           error : false,
-       })
+        let txHex = await _transactionHelper.getRawTx(txid);
+        if(txHex != null){
+            _fsMempoolService.indexTx(txHex);
+            _handleResponse(res,null,{
+                error : false,
+            })
+        }else{
+            _handleResponse(res,null,{
+                error : true,
+            })
+        }
+
     }catch(e){
        _handleResponse(res,null,{
            error : true,

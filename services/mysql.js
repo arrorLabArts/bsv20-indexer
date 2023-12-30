@@ -42,7 +42,7 @@ class MySqlService {
         CREATE TABLE IF NOT EXISTS txs (
             id BIGINT AUTO_INCREMENT PRIMARY KEY,
             txid TEXT NOT NULL,
-            rawHex TEXT NOT NULL,
+            rawHex LONGBLOB NOT NULL,
             state INT DEFAULT 1,
             createdAt BIGINT NOT NULL,
             UNIQUE KEY unique_txid (txid(255))
@@ -61,7 +61,7 @@ class MySqlService {
            owner TEXT NOT NULL,
            tick TEXT NOT NULL,
            amt DOUBLE DEFAULT 0,
-           price DOUBLE DEFAULT 0,
+           price BIGINT DEFAULT 0,
            state INT DEFAULT -1,
            type INT NOT NULL,
            subType INT DEFAULT 0,

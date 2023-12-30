@@ -2,6 +2,7 @@ const MysqlHelper = require("./mysql");
 const IndexerHelper = require("./indexer");
 const indexer = require("../consts/indexer");
 const { updateIndexerLog } = require("../utils/misc");
+const { OrderLockDecodeError } = require("../shared/data/exceptions");
 
 const _indexerHelper = new IndexerHelper();
 const _mysqlHelper = new MysqlHelper();
@@ -30,7 +31,9 @@ class JBHelper {
             }catch(e){
                 console.log("something went wrong for txid : ",tx["id"]);
                 console.log(e);
-                this._crawl = false;
+                if(!(e instanceof OrderLockDecodeError)){
+                    this._crawl = false;
+                }
                 await _mysqlHelper.updateIndexerStatus({"lastErrorLog":e.toString()});
                 await _mysqlHelper.updateIndexerStatus({"lastErrorLogTimestamp":this._dateTime.getTime()});
                 await _mysqlHelper.updateIndexerStatus({"state":indexer.states.stalled});
@@ -48,7 +51,7 @@ class JBHelper {
             await _mysqlHelper.updateIndexerStatus({"state":indexer.states.action});
             updateIndexerLog(`lastIndexTs : ${_dateTime.getTime()}`);
             processedTxCount = processedTxCount+1;
-            indexingRunning = indexingQueue.length > 0;
+            indexingRunning = false;
             this.processIndexingQueue();
 
         }

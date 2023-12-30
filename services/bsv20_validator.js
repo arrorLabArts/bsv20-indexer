@@ -5,7 +5,7 @@ const bsv20 = require("../consts/bsv20");
 const errors = require("../consts/errors");
 const MysqlHelper = require("../helpers/mysql");
 const { sanitizeBsv20Insc } = require("../utils/bsv20");
-const { delay } = require("../utils/misc");
+const { delay, binToHex } = require("../utils/misc");
 
 const _mysqlHelper = new MysqlHelper();
 
@@ -99,8 +99,9 @@ class Bsv20Validator{
             
             if(queue[i]["type"] == bsv20.op.transfer){
                 let j;
-                let res = await _mysqlHelper.getTx(queue[i]["txid"]);
-                let tx = Transaction.from_hex(res[0]["rawHex"]);
+                let resTxBin = await _mysqlHelper.getTx(queue[i]["txid"]);
+                let txRawHex = binToHex(resTxBin[0]["rawHex"])
+                let tx = Transaction.from_hex(txRawHex);
                 let nInputs = tx.get_ninputs();
                 let nOutputs = tx.get_noutputs();
 
@@ -124,8 +125,6 @@ class Bsv20Validator{
                             }else{
                                 totalAmtInputs = totalAmtInputs + resOutpoint[0]["amt"];
                             }
-                            
-
                             
                         }
 

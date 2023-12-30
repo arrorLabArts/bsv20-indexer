@@ -1,6 +1,7 @@
 const {Transaction, TxOut} = require("bsv-wasm");
 const bsv20 = require("../consts/bsv20");
-const { getInscDetails,getOrderLockDetails, getOrderLockDetailsV2 } = require("../utils/bsv20");
+const { getInscDetails, getOrderLockDetailsV2 } = require("../utils/bsv20");
+const { hexToBin } = require("../utils/misc");
 const { is1SatScript, getOrdEnvelope, getAddressP2pkhScript, getP2pkhScript, isOrderLockScript, isP2pkhScript } = require("../utils/ord");
 const { isSupportedTick } = require("../utils/platform");
 const MysqlHelper = require("./mysql");
@@ -73,7 +74,7 @@ class IndexerHelper{
                   payload["type"] = bsv20.op.transfer;
                   if(isOrderLockScript(ordOutputs[i]["scriptPubKeyHex"])){
                     let orderDetails = getOrderLockDetailsV2(ordOutputs[i]["scriptPubKeyAsm"]);
-                    payload["orderLockInfo"] = JSON.stringify(orderDetails);
+                    payload["orderLockInfo"] = JSON.stringify(orderDetails["order"]);
                     payload["subType"] = bsv20.op.subOp.list;
                     payload["price"] = orderDetails["orderValue"];
                     let outpoint = `${tx.get_input(i).get_prev_tx_id_hex()}_${tx.get_input(i).get_vout()}`
@@ -99,7 +100,7 @@ class IndexerHelper{
         if(ordOutputs.length>0){
             let payloadTx = {
                txid : tx.get_id_hex(),
-               rawHex : txHex,
+               rawHex : hexToBin(txHex),
             }
             await _mysqlHelper.addTx(payloadTx);
 

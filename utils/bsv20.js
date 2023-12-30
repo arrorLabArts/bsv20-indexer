@@ -1,4 +1,5 @@
 const { P2PKHAddress, TxOut } = require("bsv-wasm");
+const { OrderLockDecodeError } = require("../shared/data/exceptions");
 const { regexOrderLock, regexTxOutHex, regexNumber } = require("../shared/data/regex");
 const { hexToText, hexToDecimalLittleEndian } = require("./misc");
 
@@ -66,17 +67,33 @@ function sanitizeBsv20Insc(obj) {
 
   function getOrderLockDetailsV2(scriptPubkeyAsm){
 
-    let tokens = scriptPubkeyAsm.split(" ")
-    let payOutHex = tokens[6]
-    let txOutPayOut = TxOut.from_hex(tokens[6]).to_json();
-    let tmp = {
-            "payOutHex" : payOutHex,
-            "orderValue" : txOutPayOut["value"],
-            "address" : P2PKHAddress.from_pubkey_hash(Buffer.from(txOutPayOut["script_pub_key"][2],"hex")).to_string(),
+    try{
+        let tokens = scriptPubkeyAsm.split(" ")
+        let payOutHex = tokens[6]
+        let txOutPayOut = TxOut.from_hex(tokens[6]);
+        let scriptPubKey = txOutPayOut.get_script_pub_key().to_asm_string().split(" ");
+        let orderValue = txOutPayOut.get_satoshis();
+        //let hasBigInt = typeof orderValue === 'bigint';
+        
+        let tmp = {
+                 payOutHex,
+                 orderValue,
+                 "order" : {
+                    "payOutHex" : payOutHex,
+                    "orderValue" : txOutPayOut.get_satoshis().toString(),
+                    "address" : P2PKHAddress.from_pubkey_hash(Buffer.from(scriptPubKey[2],"hex")).to_string(),
+                 }
 
+    
+        }
+    
+        return tmp;
+    }catch(e){
+        console.log(e);
+        throw new OrderLockDecodeError();
     }
 
-    return tmp;
+
    
 }
 

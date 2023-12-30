@@ -144,6 +144,23 @@ function hexToText(hexString) {
   return buffer.toString('utf8');
 }
 
+function hexToBin(hexString) {
+  // Remove "0x" if present
+  hexString = hexString.replace(/^0x/, '');
+
+  // Convert hex to buffer
+  const buffer = Buffer.from(hexString, 'hex');
+
+  return buffer;
+}
+
+function binToHex(binaryData) {
+  // Convert buffer to hex string
+  const hexString = binaryData.toString('hex');
+
+  return hexString;
+}
+
 
 function hexToDecimalLittleEndian(hexString) {
   // Reverse the hex string in pairs (little endian)
@@ -178,6 +195,8 @@ module.exports = {
     parseStringToArrayObj,
     getNumberWithMaxDecimal,
     textToHex,
+    hexToBin,
+    binToHex,
     hexToText,
     hexToDecimalLittleEndian,
     updateIndexerLog,
