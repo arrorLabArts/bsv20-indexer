@@ -299,11 +299,32 @@ function isTransferInsc(jsonObj){
 
 }
 
+function hasDecimalIntegrity(decimal, number) {
+    // Check if the input is valid (non-negative decimal and number)
+    if (decimal < 0 || number < 0) {
+        throw new Error('Both numbers must be non-negative.');
+    }
+
+    // Convert numbers to strings to get decimal places
+    const decimalPlaces = (number % 1 === 0) ? 0 : number.toString().split('.')[1].length;
+
+    return decimalPlaces <= decimal;
+}
+
+function formatAmt(decimal,number){
+    if(decimal>0){
+       
+    }else{
+        return number;
+    }
+}
+
 
 module.exports = {
     getInscDetails,
     getLockDetails,
     getOrderLockDetails,
     getOrderLockDetailsV2,
-    sanitizeBsv20Insc
+    sanitizeBsv20Insc,
+    hasDecimalIntegrity
 }

@@ -11,19 +11,8 @@ class MysqlHelper {
         return new Promise((resolve, reject) => {
           _mysqlService._poolBsv20.query(
             `
-              SELECT
-                  *
-              FROM
-                  main 
-              WHERE
-                  state = -1
-              ORDER BY
-                  CASE
-                      WHEN height IS NOT NULL AND idx IS NOT NULL THEN height
-                      WHEN height IS NULL AND idx IS NOT NULL THEN idx
-                      ELSE createdAt
-                  END ASC
-              LIMIT ?
+
+            SELECT * FROM main WHERE state = -1 ORDER BY CASE WHEN height IS NOT NULL AND idx IS NOT NULL THEN height WHEN height IS NULL AND idx IS NOT NULL THEN idx ELSE createdAt END ASC, height ASC, idx ASC LIMIT ?;
 
             `,
             [limit],
@@ -148,53 +137,6 @@ class MysqlHelper {
         });
       }
 
-      async updateBalConfirmed(tick, address, amt, op) {
-        return new Promise((resolve, reject) => {
-          _mysqlService._poolBsv20.query(
-            `
-            INSERT INTO balance (tick, address, confirmed)
-            VALUES (?, ?, ?)
-            ON DUPLICATE KEY UPDATE confirmed = confirmed ${op == "inc" ? "+" : "-"} ?;
-            `,
-            [tick, address, amt, amt],
-            (err, result) => {
-              if (err) {
-                console.error(err);
-                _mysqlService._poolBsv20.end();
-                _mysqlService._poolBsv20 = _mysqlService.createPoolBsv20();
-                reject(err);
-              } else {
-                resolve(result);
-              }
-            }
-          );
-        });
-      }
-
-      async updateBalPending(tick, address, amt, op) {
-        return new Promise((resolve, reject) => {
-          _mysqlService._poolBsv20.query(
-            `
-            INSERT INTO balance (tick, address, pending)
-            VALUES (?, ?, ?)
-            ON DUPLICATE KEY UPDATE pending = pending ${op == "inc" ? "+" : "-"} ?;
-            `,
-            [tick, address, amt, amt],
-            (err, result) => {
-              if (err) {
-                console.error(err);
-                _mysqlService._poolBsv20.end();
-                _mysqlService._poolBsv20 = _mysqlService.createPoolBsv20();
-                reject(err);
-              } else {
-                resolve(result);
-              }
-            }
-          );
-        });
-      }
-      
-
       async getTokenSupply(tick,type,state) {
         return new Promise((resolve, reject) => {
           _mysqlService._poolBsv20.query(
@@ -203,6 +145,29 @@ class MysqlHelper {
 
             `,
             [tick,type,state],
+            (err, result) => {
+              if (err) {
+                console.error(err);
+                _mysqlService._poolBsv20.end();
+                _mysqlService._poolBsv20 = _mysqlService.createPoolBsv20();
+                reject(err);
+              } else {
+                resolve(result)
+                
+              }
+            }
+          );
+        });
+      }
+
+      async getTokenSupplyMint(tick,type,mintState) {
+        return new Promise((resolve, reject) => {
+          _mysqlService._poolBsv20.query(
+            `
+              SELECT SUM(amt) AS supply FROM main WHERE tick = ? AND type = ? AND mintState = ?;
+
+            `,
+            [tick,type,mintState],
             (err, result) => {
               if (err) {
                 console.error(err);
@@ -437,6 +402,101 @@ class MysqlHelper {
         });
       }
 
+      async updateSpend(outpoint,spend) {
+        return new Promise((resolve, reject) => {
+          _mysqlService._poolBsv20.query(
+            `
+            UPDATE main
+            SET spend = ?
+            WHERE outpoint = ?;
+            `,
+            [spend,outpoint],
+            (err, result) => {
+              if (err) {
+                console.error(err);
+                _mysqlService._poolBsv20.end();
+                _mysqlService._poolBsv20 = _mysqlService.createPoolBsv20();
+                reject(err);
+              } else {
+                resolve(result)
+                
+              }
+            }
+          );
+        });
+      }
+
+      async updateStateOneByMint(tick,type,state,mintState,outpoint,reason) {
+        return new Promise((resolve, reject) => {
+          _mysqlService._poolBsv20.query(
+            `
+            UPDATE main
+            SET state = ?, mintState = ?, reason = ?
+            WHERE tick = ? AND type = ? AND outpoint = ?;
+            `,
+            [state,mintState,reason,tick,type,outpoint],
+            (err, result) => {
+              if (err) {
+                console.error(err);
+                _mysqlService._poolBsv20.end();
+                _mysqlService._poolBsv20 = _mysqlService.createPoolBsv20();
+                reject(err);
+              } else {
+                resolve(result)
+                
+              }
+            }
+          );
+        });
+      }
+
+      async updateAmtOne(outpoint,amt) {
+        return new Promise((resolve, reject) => {
+          _mysqlService._poolBsv20.query(
+            `
+            UPDATE main
+            SET amt = ? WHERE outpoint = ?;
+            `,
+            [amt,outpoint],
+            (err, result) => {
+              if (err) {
+                console.error(err);
+                _mysqlService._poolBsv20.end();
+                _mysqlService._poolBsv20 = _mysqlService.createPoolBsv20();
+                reject(err);
+              } else {
+                resolve(result)
+                
+              }
+            }
+          );
+        });
+      }
+
+      async updateStateManyByMintExept(tick,type,state,mintState,outpoint,reason) {
+        return new Promise((resolve, reject) => {
+          _mysqlService._poolBsv20.query(
+            `
+            UPDATE main
+            SET state = ?, mintState = ?, reason = ?
+            WHERE tick = ? AND type = ? AND mintState = ? AND outpoint != ?;
+            `,
+            [state,mintState,reason,tick,type,mintState,outpoint],
+            (err, result) => {
+              if (err) {
+                console.error(err);
+                _mysqlService._poolBsv20.end();
+                _mysqlService._poolBsv20 = _mysqlService.createPoolBsv20();
+                reject(err);
+              } else {
+                resolve(result)
+                
+              }
+            }
+          );
+        });
+      }
+
       async indexInscOutpoint(data) {
         return new Promise((resolve, reject) => {
           const _dateTime = new Date();
@@ -584,15 +644,6 @@ class MysqlHelper {
           );
         });
       }
-
-
-      
-
-
-
-
-      
-
 
 
 }

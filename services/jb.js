@@ -19,7 +19,9 @@ class JBService {
    async init(){
      
     let resIndexerStatus = await _mysqlHelper.getIndexerStatus();
-    jbSubHeight = resIndexerStatus[0]["[settledHeight]"]>jbSubHeight?resIndexerStatus[0]["settledHeight"]:jbSubHeight;
+    jbSubHeight = resIndexerStatus[0]["settledHeight"]>jbSubHeight?resIndexerStatus[0]["settledHeight"]:jbSubHeight;
+    console.log(resIndexerStatus);
+    console.log(jbSubHeight);
 
      this._client = new JungleBusClient(process.env.JB_BASE_URL, {
         onConnected(ctx) {

@@ -3,6 +3,7 @@ module.exports = Object.freeze({
         "idle" : 0,
         "action" : 1,
         "stalled" : -1,
+        "validatorStalled" : -2,
     }
 
 })

@@ -9,7 +9,6 @@ const { sanitizeBsv20Insc } = require("../utils/bsv20");
 
 const _mysqlHelper = new MysqlHelper();
 const _fsMempoolService = new FsMempoolService();
-const _wocHelper = new WocHelper();
 const _transactionHelper = new TransactionHelper();
 
 const getTickInfo = async(req,res)=>{
@@ -22,7 +21,7 @@ const getTickInfo = async(req,res)=>{
         if(isSupportedTick(tick) && resDeployInfo.length>0){
             let deployInfo = JSON.parse(resDeployInfo[0]["insc"]);
             let deplayInfoSantized = sanitizeBsv20Insc(deployInfo);
-            let resConfirmedSupply = await _mysqlHelper.getTokenSupply(tick,bsv20.op.mint,bsv20.states.valid);
+            let resConfirmedSupply = await _mysqlHelper.getTokenSupplyMint(tick,bsv20.op.mint,bsv20.mintStates.valid);
             let resPendingSupply = await _mysqlHelper.getTokenSupply(tick,bsv20.op.mint,bsv20.states.pending);
             let resOwnersCount = await _mysqlHelper.getOwnersCountByTick(tick);
         

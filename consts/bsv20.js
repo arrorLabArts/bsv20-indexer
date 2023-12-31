@@ -8,6 +8,11 @@ module.exports = Object.freeze({
         "listed" : 4,
         "nullOwner" : 5
     },
+    mintStates : {
+        "pending" : -1,
+        "valid" : 1,
+        "invalid" : 0
+    },
     op : {
        deploy : 0,
        mint : 1,

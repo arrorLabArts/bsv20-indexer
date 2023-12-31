@@ -3,3 +3,80 @@ tick=QlNWUw==,tick=RklSRQ==,tick=RFJBRw==,QklaQQ==
 235577ba58de4a9748d1919eab9678ea9db2e2bcb7637ab06ab4df3c82b46076
 
 14f9eb9f3cca76a6a9e788cbab6d418fec1391138b2280841e00000000001976a9146acec3410a1d7bbb50f8e7ed96478ade9a8c5a8b88ac
+
+{
+
+  "txid": "ca5f77cae8fa5a6825dae36ef3917ff9eb1b036f08baf483e036bb403c9bac3d",
+  "vout": 0,
+  "height": 793048,
+  "idx": "6793",
+  "status": 1,
+  "included": true,
+  "tick": "FIRE",
+  "max": "21000000",
+  "lim": "1000",
+  "dec": 0,
+  "supply": "0",
+  "available": "21000000",
+  "pctMinted": "0.0",
+  "accounts": "0",
+  "pending": "23973145",
+  "fundAddress": "1Kqa1dkkhwykSq5iW8HzFnoVzoEzMjkikj",
+  "fundTotal": "0",
+  "fundUsed": "0",
+  "fundBalance": "0"
+}
+
+
+{
+  "txid": "172551ca918352953895f188c111a786f20a93b97bdc3f5c3d4b0c8101efb20e",
+  "vout": 0,
+  "height": 792552,
+  "idx": "6644",
+  "status": 1,
+  "included": true,
+  "tick": "1SAT",
+  "max": "21000000",
+  "lim": "1000",
+  "dec": 0,
+  "supply": "21000000",
+  "available": "0",
+  "pctMinted": "100.0",
+  "accounts": "0",
+  "pending": "1278100220",
+  "fundAddress": "14NGipKGSF66JpDXRsBCCXDe6kisQTUYyD",
+  "fundTotal": "0",
+  "fundUsed": "0",
+  "fundBalance": "0"
+}
+
+
+{
+  "txid": "ce1f54579841419f45579be5e039a044ba83fe91d1ada5aceeb859094475a1c1",
+  "vout": 0,
+  "height": 821400,
+  "idx": "97",
+  "status": 1,
+  "included": true,
+  "tick": "BSVS",
+  "max": "21000000",
+  "lim": "1000",
+  "dec": 0,
+  "supply": "21000000",
+  "available": "0",
+  "pctMinted": "100.0",
+  "accounts": "0",
+  "pending": "1430412796",
+  "fundAddress": "1PMbrFW2o8aPo94Lf3fMH9SToPBfTJ3e5c",
+  "fundTotal": "0",
+  "fundUsed": "0",
+  "fundBalance": "0"
+}
+
+
+SELECT height,idx FROM main WHERE state = -1 ORDER BY CASE WHEN height IS NOT NULL AND idx IS NOT NULL THEN height WHEN height IS NULL AND idx IS NOT NULL THEN idx ELSE createdAt END ASC LIMIT 100
+
+SELECT height,idx FROM main WHERE state = -1 ORDER BY CASE WHEN height IS NOT NULL AND idx IS NOT NULL THEN height WHEN height IS NULL AND idx IS NOT NULL THEN idx ELSE createdAt END ASC, height ASC, idx ASC LIMIT 100;
+
+0|bsv20 indexer server  | 2023-12-31T14:15:09: 821872   19379
+0|bsv20 indexer server  | 2023-12-31T14:15:09: 821872   5202

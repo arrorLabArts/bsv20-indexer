@@ -34,6 +34,9 @@ module.exports = Object.freeze({
         insc : {
             format : {
                 message : "INVALID FORMAT"
+            },
+            dec : {
+                message : "INVALID DECIMAL"
             }
         },
         mint : {
@@ -50,12 +53,16 @@ module.exports = Object.freeze({
         deploy : {
             reduntantDeploy : {
                 message : "REDUNDANT DEPLOY"
+            },
+            nullDeploy : {
+                message : "TICK DOESN'T EXIST"
             }
         },
         transfer : {
             lowerInputAmt: {
                 message : "INPUT AMT LOWER THAN OUTPUT AMT"
-            }
+            },
+            
         },
         list : {
 

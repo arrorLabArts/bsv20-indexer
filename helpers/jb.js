@@ -34,9 +34,7 @@ class JBHelper {
                 if(!(e instanceof OrderLockDecodeError)){
                     this._crawl = false;
                 }
-                await _mysqlHelper.updateIndexerStatus({"lastErrorLog":e.toString()});
-                await _mysqlHelper.updateIndexerStatus({"lastErrorLogTimestamp":this._dateTime.getTime()});
-                await _mysqlHelper.updateIndexerStatus({"state":indexer.states.stalled});
+                await _mysqlHelper.updateIndexerStatus({"lastErrorLog":e.toString(),"lastErrorLogTimestamp":this._dateTime.getTime(),"state":indexer.states.stalled});
             }
         }
 
@@ -46,9 +44,7 @@ class JBHelper {
 
             let tx = indexingQueue.shift();
             await _indexerHelper.indexBsv20(tx["transaction"],tx["block_height"],tx["block_index"]);
-            await _mysqlHelper.updateIndexerStatus({"indexHeight":tx["block_height"]});
-            await _mysqlHelper.updateIndexerStatus({"indexIdx":tx["block_index"]});
-            await _mysqlHelper.updateIndexerStatus({"state":indexer.states.action});
+            await _mysqlHelper.updateIndexerStatus({"indexHeight":tx["block_height"],"indexIdx":tx["block_index"],"state":indexer.states.action});
             updateIndexerLog(`lastIndexTs : ${_dateTime.getTime()}`);
             processedTxCount = processedTxCount+1;
             indexingRunning = false;

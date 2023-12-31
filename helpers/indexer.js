@@ -70,6 +70,7 @@ class IndexerHelper{
               if(ordOutputs[i]["inscDetails"]["insc"]["op"] == "mint"){
                   payload["amt"] = ordOutputs[i]["inscDetails"]["insc"]["amt"];
                   payload["type"] = bsv20.op.mint;
+                  payload["mintState"] = bsv20.mintStates.pending;
               }else if(ordOutputs[i]["inscDetails"]["insc"]["op"] == "transfer"){
                   payload["type"] = bsv20.op.transfer;
                   if(isOrderLockScript(ordOutputs[i]["scriptPubKeyHex"])){
