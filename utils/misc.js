@@ -173,11 +173,11 @@ function hexToDecimalLittleEndian(hexString) {
 }
 
 function updateIndexerLog(newContent) {
-  fs.writeFile(indexerLogPath, newContent, 'utf8', err => {
-    if (err) {
-      console.error(`Error updating indexer log: ${err}`);
-    }
-  });
+  try {
+    fs.writeFileSync(indexerLogPath, newContent, 'utf8');
+  } catch (err) {
+    console.error(`Error updating indexer log: ${err}`);
+  }
 }
 
 

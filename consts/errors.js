@@ -62,7 +62,13 @@ module.exports = Object.freeze({
             lowerInputAmt: {
                 message : "INPUT AMT LOWER THAN OUTPUT AMT"
             },
+            missingInput : {
+                message : "MISSING INPUT"
+            },
             
+            missingOutput : {
+                message : "MISSING OUTPUT"
+            }
         },
         list : {
 

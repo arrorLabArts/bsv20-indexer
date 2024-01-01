@@ -38,7 +38,7 @@ class MysqlHelper {
             SELECT
                 insc
             FROM
-                main WHERE type = ? AND tick = ? AND state = ?
+                main WHERE type = ? AND LOWER(tick) = LOWER(?) AND state = ?
                 ORDER BY
                   CASE
                       WHEN height IS NOT NULL AND idx IS NOT NULL THEN height
@@ -68,10 +68,10 @@ class MysqlHelper {
             `
             UPDATE main
             SET state = CASE 
-                           WHEN tick = ? AND outpoint = ? THEN 1
+                           WHEN LOWER(tick) = LOWER(?) AND outpoint = ? THEN 1
                            ELSE 0
                         END
-            WHERE tick = ? AND type = 0;
+            WHERE LOWER(tick) = LOWER(?) AND type = 0;
             `,
             [tick,outpoint,tick],
             (err, result) => {
@@ -95,7 +95,7 @@ class MysqlHelper {
             `
             UPDATE main
             SET state = ? 
-            WHERE tick = ? AND type = ? AND outpoint != ?;
+            WHERE LOWER(tick) = LOWER(?) AND type = ? AND outpoint != ?;
             `,
             [state,tick,type,outpoint],
             (err, result) => {
@@ -141,7 +141,7 @@ class MysqlHelper {
         return new Promise((resolve, reject) => {
           _mysqlService._poolBsv20.query(
             `
-              SELECT SUM(amt) AS supply FROM main WHERE tick = ? AND type = ? AND state = ?;
+              SELECT SUM(amt) AS supply FROM main WHERE LOWER(tick) = LOWER(?) AND type = ? AND state = ?;
 
             `,
             [tick,type,state],
@@ -164,7 +164,7 @@ class MysqlHelper {
         return new Promise((resolve, reject) => {
           _mysqlService._poolBsv20.query(
             `
-              SELECT SUM(amt) AS supply FROM main WHERE tick = ? AND type = ? AND mintState = ?;
+              SELECT SUM(amt) AS supply FROM main WHERE LOWER(tick) = LOWER(?) AND type = ? AND mintState = ?;
 
             `,
             [tick,type,mintState],
@@ -188,7 +188,7 @@ class MysqlHelper {
         return new Promise((resolve, reject) => {
           _mysqlService._poolBsv20.query(
             `
-              SELECT txid,vout,outpoint,amt,tick,type as op,subType as subOp,insc,scriptPubKeyHex as script,state FROM main WHERE tick = ? AND owner = ? AND state = ?;
+              SELECT txid,vout,outpoint,amt,tick,type as op,subType as subOp,insc,scriptPubKeyHex as script,state FROM main WHERE LOWER(tick) = LOWER(?) AND owner = ? AND state = ?;
 
             `,
             [tick,address,state],
@@ -258,7 +258,7 @@ class MysqlHelper {
         return new Promise((resolve, reject) => {
           _mysqlService._poolBsv20.query(
             `
-              SELECT SUM(amt) AS balance FROM main WHERE tick = ? AND owner = ? AND state = ?;
+              SELECT SUM(amt) AS balance FROM main WHERE LOWER(tick) = LOWER(?) AND owner = ? AND state = ?;
 
             `,
             [tick,address,state],
@@ -281,7 +281,7 @@ class MysqlHelper {
         return new Promise((resolve, reject) => {
           _mysqlService._poolBsv20.query(
             `
-              SELECT SUM(amt) AS balance FROM main WHERE tick = ? AND owner = ? AND state = ? AND subType = ?;
+              SELECT SUM(amt) AS balance FROM main WHERE LOWER(tick) = LOWER(?) AND owner = ? AND state = ? AND subType = ?;
 
             `,
             [tick,address,state,subType],
@@ -311,7 +311,7 @@ class MysqlHelper {
               scriptPubKeyHex as script,
               IFNULL(price / amt, 0) as pricePerTick
             FROM main
-            WHERE subType = ? AND tick = ? AND state = ?
+            WHERE subType = ? AND LOWER(tick) = LOWER(?) AND state = ?
             ORDER BY pricePerTick ASC
             LIMIT ? OFFSET ?;
 
@@ -336,7 +336,7 @@ class MysqlHelper {
         return new Promise((resolve, reject) => {
           _mysqlService._poolBsv20.query(
             `
-              SELECT txid,vout,outpoint,owner,tick,amt,state,type as op,subType as subOp,orderLockInfo as orderlock,scriptPubKeyHex as script FROM main WHERE owner = ? AND subType = ? AND tick = ? AND state = ?;
+              SELECT txid,vout,outpoint,owner,tick,amt,state,type as op,subType as subOp,orderLockInfo as orderlock,scriptPubKeyHex as script FROM main WHERE owner = ? AND subType = ? AND LOWER(tick) = LOWER(?) AND state = ?;
 
             `,
             [address,bsv20.op.subOp.list,tick,state],
@@ -360,7 +360,7 @@ class MysqlHelper {
           _mysqlService._poolBsv20.query(
             `
             SELECT COUNT(DISTINCT owner) AS ownersCount
-            FROM main WHERE tick = ?;
+            FROM main WHERE LOWER(tick) = LOWER(?);
             `,
             [tick],
             (err, result) => {
@@ -384,7 +384,7 @@ class MysqlHelper {
             `
             UPDATE main
             SET state = ?, reason = ?
-            WHERE tick = ? AND type = ? AND outpoint = ?;
+            WHERE LOWER(tick) = LOWER(?) AND type = ? AND outpoint = ?;
             `,
             [state,reason,tick,type,outpoint],
             (err, result) => {
@@ -432,7 +432,7 @@ class MysqlHelper {
             `
             UPDATE main
             SET state = ?, mintState = ?, reason = ?
-            WHERE tick = ? AND type = ? AND outpoint = ?;
+            WHERE LOWER(tick) = LOWER(?) AND type = ? AND outpoint = ?;
             `,
             [state,mintState,reason,tick,type,outpoint],
             (err, result) => {
@@ -473,15 +473,65 @@ class MysqlHelper {
         });
       }
 
-      async updateStateManyByMintExept(tick,type,state,mintState,outpoint,reason) {
+      async updateAmtMintOne(amt,state,mintState,outpoint) {
+        return new Promise((resolve, reject) => {
+          _mysqlService._poolBsv20.query(
+            `
+            UPDATE main
+            SET amt = ?, state = ?, mintState = ? WHERE outpoint = ?;
+            `,
+            [amt,state,mintState,outpoint],
+            (err, result) => {
+              if (err) {
+                console.error(err);
+                _mysqlService._poolBsv20.end();
+                _mysqlService._poolBsv20 = _mysqlService.createPoolBsv20();
+                reject(err);
+              } else {
+                resolve(result)
+                
+              }
+            }
+          );
+        });
+      }
+
+
+      async updateMintStateManyExcept(tick,type,state,mintStateNew,outpoint,mintStateOld,reason) {
         return new Promise((resolve, reject) => {
           _mysqlService._poolBsv20.query(
             `
             UPDATE main
             SET state = ?, mintState = ?, reason = ?
-            WHERE tick = ? AND type = ? AND mintState = ? AND outpoint != ?;
+            WHERE LOWER(tick) = LOWER(?) AND type = ? AND mintState = ? AND outpoint != ?;
             `,
-            [state,mintState,reason,tick,type,mintState,outpoint],
+            [state,mintStateNew,reason,tick,type,mintStateOld,outpoint],
+            (err, result) => {
+              if (err) {
+                console.error(err);
+                _mysqlService._poolBsv20.end();
+                _mysqlService._poolBsv20 = _mysqlService.createPoolBsv20();
+                reject(err);
+              } else {
+                resolve(result)
+                
+              }
+            }
+          );
+        });
+      }
+
+      async updateMintStateMany(tick,type,state,mintStateNew,mintStateOld,reason) {
+
+
+        return new Promise((resolve, reject) => {
+          _mysqlService._poolBsv20.query(
+            `
+            UPDATE main
+            SET state = ?, mintState = ?, reason = ?
+            WHERE LOWER(tick) = LOWER(?) AND type = ? AND mintState = ?;
+            `,
+            [state,mintStateNew,reason,tick,type,mintStateOld],
             (err, result) => {
               if (err) {
                 console.error(err);

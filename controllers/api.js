@@ -22,7 +22,7 @@ const getTickInfo = async(req,res)=>{
             let deployInfo = JSON.parse(resDeployInfo[0]["insc"]);
             let deplayInfoSantized = sanitizeBsv20Insc(deployInfo);
             let resConfirmedSupply = await _mysqlHelper.getTokenSupplyMint(tick,bsv20.op.mint,bsv20.mintStates.valid);
-            let resPendingSupply = await _mysqlHelper.getTokenSupply(tick,bsv20.op.mint,bsv20.states.pending);
+            let resPendingSupply = await _mysqlHelper.getTokenSupplyMint(tick,bsv20.op.mint,bsv20.mintStates.pending);
             let resOwnersCount = await _mysqlHelper.getOwnersCountByTick(tick);
         
             let tmp = {

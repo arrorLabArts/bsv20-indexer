@@ -1,9 +1,5 @@
 tick=QlNWUw==,tick=RklSRQ==,tick=RFJBRw==,QklaQQ==
 
-235577ba58de4a9748d1919eab9678ea9db2e2bcb7637ab06ab4df3c82b46076
-
-14f9eb9f3cca76a6a9e788cbab6d418fec1391138b2280841e00000000001976a9146acec3410a1d7bbb50f8e7ed96478ade9a8c5a8b88ac
-
 {
 
   "txid": "ca5f77cae8fa5a6825dae36ef3917ff9eb1b036f08baf483e036bb403c9bac3d",
@@ -73,10 +69,3 @@ tick=QlNWUw==,tick=RklSRQ==,tick=RFJBRw==,QklaQQ==
   "fundBalance": "0"
 }
 
-
-SELECT height,idx FROM main WHERE state = -1 ORDER BY CASE WHEN height IS NOT NULL AND idx IS NOT NULL THEN height WHEN height IS NULL AND idx IS NOT NULL THEN idx ELSE createdAt END ASC LIMIT 100
-
-SELECT height,idx FROM main WHERE state = -1 ORDER BY CASE WHEN height IS NOT NULL AND idx IS NOT NULL THEN height WHEN height IS NULL AND idx IS NOT NULL THEN idx ELSE createdAt END ASC, height ASC, idx ASC LIMIT 100;
-
-0|bsv20 indexer server  | 2023-12-31T14:15:09: 821872   19379
-0|bsv20 indexer server  | 2023-12-31T14:15:09: 821872   5202
